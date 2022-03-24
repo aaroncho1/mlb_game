@@ -6,6 +6,15 @@ class Game
         @away_team_hitters, @home_team_hitters = away_team_hitters, home_team_hitters
         @away_team_pitchers, @home_team_pitchers = away_team_pitchers, away_team_pitchers
         @player_1, @player_2 = player_1, player_2
+        @outs = 0
+    end
+
+    def score_difference
+        @away_team.runs - @home_team.runs
+    end
+
+    def game_won?
+        outs == 27 && score_difference != 0
     end
 
     def play
@@ -15,5 +24,9 @@ class Game
         puts "Type 's' and 'enter' to start game"
         selected_key = gets.chomp
         system("clear") if selected_key == "s"
+        until game_won?
+            play_inning
+            switch_teams
+        end
     end
 end
