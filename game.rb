@@ -15,9 +15,5 @@ class Game
         puts "Type 's' and 'enter' to start game"
         selected_key = gets.chomp
         system("clear") if selected_key == "s"
-
-
-
-
     end
 end
