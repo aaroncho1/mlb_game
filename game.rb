@@ -1,12 +1,16 @@
 class Game
 
+    attr_accessor :game_outs, :inning_outs, :inning
+
     def initialize(away_team, home_team, away_team_hitters, away_team_pitchers, 
         home_team_hitters, home_team_pitchers, player_1, player_2)
         @away_team, @home_team = away_team, home_team
         @away_team_hitters, @home_team_hitters = away_team_hitters, home_team_hitters
         @away_team_pitchers, @home_team_pitchers = away_team_pitchers, away_team_pitchers
         @player_1, @player_2 = player_1, player_2
-        @outs = 0
+        @game_outs = 0
+        @inning_outs = 0
+        @inning = 1
     end
 
     def score_difference
@@ -14,7 +18,7 @@ class Game
     end
 
     def game_won?
-        outs == 27 && score_difference != 0
+        game_outs == 27 && score_difference != 0
     end
 
     def play
@@ -25,8 +29,8 @@ class Game
         selected_key = gets.chomp
         system("clear") if selected_key == "s"
         until game_won?
-            play_inning
-            switch_teams
+            play_half_inning
+            switch_sides
         end
     end
 end
