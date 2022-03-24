@@ -11,15 +11,26 @@ class Game
         @game_outs = 0
         @inning_outs = 0
         @inning = 1
+        @pitching_team = home_team
+        @hitting_team = away_team
     end
 
     def score_difference
         @away_team.runs - @home_team.runs
     end
 
+    def extra_innings?
+        @game_outs >= 27 && score_difference == 0
+    end
+
     def game_won?
+        play_extra_innings if extra_innings?
         game_outs == 27 && score_difference != 0
     end
+
+    def play_half_inning
+    end
+
 
     def play
         puts "Welcome to MLB 2 Player Game! The selected teams and players have been added."
