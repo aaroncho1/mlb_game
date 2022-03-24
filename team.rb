@@ -4,6 +4,8 @@ class Team
         @name = name 
         @players = players
         @runs = 0
+        @hits = 0
+        @errors = 0
     end
 
 end
