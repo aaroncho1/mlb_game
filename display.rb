@@ -9,6 +9,9 @@ class Display
     def show_pitch_options
     end
 
+    def strikezone(pitch, zone)
+    end
+
     def show_bases
         bases.each_with_index do |player, i|
             if i == 0
@@ -20,4 +23,7 @@ class Display
             end
         end
     end 
+
+    def render(pitcher)
+    end
 end

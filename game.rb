@@ -37,7 +37,10 @@ class Game
     def play_half_inning
         display.render(current_pitcher)
         until inning_over?
-            pitcher.choose_pitch
+            pitch = pitcher.choose_pitch
+            zone = pitcher.choose_zone
+            display.strikezone(pitch, zone)
+            
 
     end
 
