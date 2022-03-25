@@ -1,6 +1,6 @@
 class Game
     attr_reader :display
-    attr_accessor :game_outs, :inning_outs, :inning
+    attr_accessor :game_outs, :inning_outs, :inning, :current_pitcher, :current_hitter
 
     def initialize(away_team, home_team, away_team_hitters, away_team_pitchers, 
         home_team_hitters, home_team_pitchers)
@@ -35,7 +35,7 @@ class Game
     end
 
     def play_half_inning
-        display.render
+        display.render(current_pitcher)
         until inning_over?
             pitcher.choose_pitch
 

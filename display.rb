@@ -6,6 +6,9 @@ class Display
         @bases = []
     end
 
+    def show_pitch_options
+    end
+
     def show_bases
         bases.each_with_index do |player, i|
             if i == 0
