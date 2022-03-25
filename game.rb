@@ -13,6 +13,8 @@ class Game
         @pitching_team = home_team
         @hitting_team = away_team
         @display = Display.new
+        @current_pitcher = nil
+        @current_hitter = nil
     end
 
     def score_difference
@@ -28,8 +30,14 @@ class Game
         game_outs == 27 && score_difference != 0
     end
 
+    def inning_over?
+        @inning_outs == 3
+    end
+
     def play_half_inning
         display.render
+        until inning_over?
+            pitcher.choose_pitch
 
     end
 

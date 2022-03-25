@@ -5,4 +5,7 @@ class Pitcher
         @tendencies = tendencies 
     end
 
+    def choose_pitch
+    end
+
 end
