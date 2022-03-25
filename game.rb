@@ -71,14 +71,20 @@ class Game
         result
     end
 
+    def pitch(pitcher)
+        pitch = pitcher.choose_pitch
+        zone = pitcher.choose_zone
+        result = throw_pitch(pitcher, pitch, zone)
+    end
+
+    def swing(current_hitter)
+        guess_pitch?
+
     def play_half_inning
-        display.render(current_pitcher)
+        display.render(current_pitcher, current_hitter)
         until inning_over?
-            pitch = pitcher.choose_pitch
-            zone = pitcher.choose_zone
-            throw_pitch(current_pitcher, pitch, zone)
-
-
+            pitch(current_pitcher)
+            swing(current_hitter)
 
     end
 
