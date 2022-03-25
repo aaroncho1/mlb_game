@@ -1,4 +1,5 @@
 class Game
+    CORNERS = []
     attr_reader :display
     attr_accessor :game_outs, :inning_outs, :inning, :current_pitcher, :current_hitter
 
@@ -34,13 +35,50 @@ class Game
         @inning_outs == 3
     end
 
+    def corner_pitch_simulator(pitcher)
+        if pitcher.stamina >= 200
+            [:S, :S, :S, :S, :S, :S, :S, :S, :B, :B].sample
+        elsif pitcher.stamina >= 100
+            [:S, :S, :S, :S, :S, :S, :B, :B, :B, :B].sample
+        else
+            [:S, :S, :S, :S, :B, :B, :B, :B, :B, :B].sample
+        end
+    end
+
+    def middle_pitch_simulator(pitcher)
+        if pitcher.stamina >= 200
+            [:S, :S, :S, :S, :S, :S, :S, :S, :S, :B].sample
+        elsif pitcher.stamina >= 100
+            [:S, :S, :S, :S, :S, :S, :S, :B, :B, :B].sample
+        else
+            [:S, :S, :S, :S, :S, :S, :B, :B, :B, :B].sample
+        end
+
+    def pitch_result(pitcher, first_result, zone)
+        if first_result == :S && CORNERS.include?(zone)
+            corner_pitch_simulator(pitcher)
+        elsif first_result == :S && !CORNERS.include?(zone)
+            middle_pitch_simulator(pitcher)
+        elsif first_result == :B    
+            :B   
+        end
+    end
+
+    def throw_pitch(pitcher, pitch, zone)
+        tendencies = pitcher.tendencies[pitch]
+        first_result = tendencies.sample 
+        result = pitch_result(pitcher, first_result, zone)
+        result
+    end
+
     def play_half_inning
         display.render(current_pitcher)
         until inning_over?
             pitch = pitcher.choose_pitch
             zone = pitcher.choose_zone
-            display.strikezone(pitch, zone)
-            
+            throw_pitch(current_pitcher, pitch, zone)
+
+
 
     end
 
