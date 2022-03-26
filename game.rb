@@ -107,38 +107,87 @@ class Game
         out_result = [:g, :f].sample
         if out_result == :g && display.bases[0].is_a?(Hitter)
             double_play_simulation
+        elsif out_result == :f && display.bases[2].is_a?(Hitter)
+            sacrifice_fly_simulation
+        else 
+            inning_outs += 1
         end
     end
 
-    def in_play_simulation(hitter)
-        result = hitter.tendencies.sample #0,1,2,3
+    def in_play_guessed_simulation(hitter)
+        result = hitter.guessed_tendencies.sample #0,1,2,3,4
         if hit?(result)
             move_players
             record_hit(result)
         else
             record_out
         end
+        switch_batter
+    end
+
+    def corner_pitch?(pitch_zone)
+        CORNERS.include?(pitch_zone)
+    end
+
+
+    def in_play_simulation(hitter, pitch_zone)
+        result = corner_pitch?(pitch_zone) ? hitter.corner_tendencies.sample : hitter.tendencies.sample
+        if hit?(result)
+            move_players
+            record_hit(result)
+        else
+            record_out
+        end
+        switch_batter
+    end
+
+    def strikeout?
+        strikes == 3
     end
 
     def current_batter_pitcher_simulation
-        pitch_result = pitch(current_pitcher)
+        pitch_result = pitch(current_pitcher) #:S or :B
         swing(current_hitter, pitch_result)
 
     def guessed_hit_simulation(guessed_zone, hitter, pitch)
         if guessed_zone == current_pitch_zone[0]
-            in_play_simulation(hitter)
+            in_play_guessed_simulation(hitter)
+        else 
+            strikes += 1
+            strikeout? ? puts "Strikeout!" : puts "Strike swinging"
+        end
+    end
 
+    def walk
+        balls == 4
+    end
 
     def swing(hitter, pitch)
         guessed_zone = hitter.guess_pitch? # 0,1,2 or false
         if guessed_zone
             guessed_hit_simulation(guessed_zone, hitter, pitch)
+        else
+            hit_simulation(hitter, current_pitch_zone, pitch)
+        end
+    end
+
+    def hit_simulation(hitter, current_pitch_zone, pitch)
+        swing_choice = hitter.swing?
+        if swing_choice == "y" && pitch == :B  
+            strikes += 1
+            strikeout? ? puts "Strikeout!" : puts "Strike swinging"
+        elsif swing_choice == "y" && pitch == :S 
+            in_play_simulation(hitter, current_pitch_zone)
+
+
+
 
 
     def play_half_inning
         display.render(current_pitcher, current_hitter, away_team, home_team, inning_outs, balls, strikes)
         until inning_over?
-            current_batter_pitcher_simulation
+                current_batter_pitcher_simulation
+
 
     end
 
