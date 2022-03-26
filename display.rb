@@ -1,5 +1,4 @@
 class Display
-
     attr_accessor :bases
 
     def initialize
@@ -22,6 +21,6 @@ class Display
     end 
 
     def render(pitcher, hitter, away_team, home_team, inning_outs, balls, strikes)
-        
+
     end
 end

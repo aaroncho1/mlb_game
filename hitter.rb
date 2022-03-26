@@ -1,5 +1,7 @@
 class Hitter
 
+    attr_reader :team, :position, :tendencies, :guessed_tendencies, :corner_tendencies
+
     def initialize(name, team, position, tendencies, guessed_tendencies, corner_tendencies)
         @name = name
         @position = position

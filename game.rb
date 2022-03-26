@@ -265,8 +265,10 @@ class Game
         enter_to_start
         until game_won? #outs == 27
             play_half_inning
-            switch_sides if half_inning_over?
-            reset_inning
+            if half_inning_over?
+                switch_sides
+                reset_inning
+            end
         end
     end
 end
