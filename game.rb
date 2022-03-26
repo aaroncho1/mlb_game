@@ -1,5 +1,6 @@
 class Game
     CORNERS = [[0,0], [0,2], [2,0] [2,2]]
+    SWING_ON_STRIKE_OPTOINS = [:s, :s, :f, :f, :h, :h, :h, :h]
     attr_reader :display, :away_team, :home_team
     attr_accessor :game_outs, :inning_outs, :inning, :current_pitcher, 
     :current_hitter, :current_pitch_zone, :strike_zone, :balls, :strikes
@@ -178,11 +179,26 @@ class Game
             strikes += 1
             strikeout? ? puts "Strikeout!" : puts "Strike swinging"
         elsif swing_choice == "y" && pitch == :S 
-            in_play_simulation(hitter)
-
-
-
-
+            result = SWING_ON_STRIKE_OPTOINS.sample
+            if result == :h  
+                in_play_simulation(hitter)
+            elsif result == :f  
+                puts "foul"
+                strikes += 1 unless strikes == 2
+            elsif result == :s  
+                strikeout? ? puts "Strikeout!" : puts "Strike swinging"
+            end
+        elsif swing_choice == "n" && pitch == :B   
+            balls += 1 
+            if walk?
+                puts "Walk!"
+                move_players
+            end
+        elsif swing_choice == "n" && pitch == :S   
+            strikes += 1
+            strikeout? ? puts "Strikeout!" : puts "Strike looking"
+        end
+    end
 
     def play_half_inning
         display.render(current_pitcher, current_hitter, away_team, home_team, inning_outs, balls, strikes)
