@@ -1,21 +1,19 @@
 class Game
     CORNERS = []
-    attr_reader :display
-    attr_accessor :game_outs, :inning_outs, :inning, :current_pitcher, :current_hitter
+    attr_reader :display, :away_team, :home_team
+    attr_accessor :game_outs, :inning_outs, :inning, :current_pitcher, 
+    :current_hitter, :current_pitch_zone, :strike_zone, :balls, :strikes
 
     def initialize(away_team, home_team, away_team_hitters, away_team_pitchers, 
         home_team_hitters, home_team_pitchers)
         @away_team, @home_team = away_team, home_team
         @away_team_hitters, @home_team_hitters = away_team_hitters, home_team_hitters
         @away_team_pitchers, @home_team_pitchers = away_team_pitchers, away_team_pitchers
-        @game_outs = 0
-        @inning_outs = 0
-        @inning = 1
-        @pitching_team = home_team
-        @hitting_team = away_team
+        @game_outs, @inning_outs, @balls, @strikes, @inning = 0, 0, 0, 0, 1
+        @pitching_team, @hitting_team = home_team, away_team
         @display = Display.new
-        @current_pitcher = nil
-        @current_hitter = nil
+        @current_pitcher, @current_hitter, @current_pitch_zone = nil, nil, nil
+        @strike_zone = Array.new(3){Array.new(3, :X)}
     end
 
     def score_difference
@@ -74,17 +72,29 @@ class Game
     def pitch(pitcher)
         pitch = pitcher.choose_pitch
         zone = pitcher.choose_zone
+        @current_pitch_zone = zone
         result = throw_pitch(pitcher, pitch, zone)
     end
 
-    def swing(current_hitter)
-        guess_pitch?
+    def current_batter_pitcher_simulation
+        pitch_result = pitch(current_pitcher)
+        swing(current_hitter, pitch_result)
+
+    def guessed_hit_simulation(zone, hitter, pitch)
+        if zone == current_pitch_zone[0]
+            in_play_simulation
+
+
+    def swing(hitter, pitch)
+        guessed_zone = hitter.guess_pitch?
+        if guessed_zone
+            guessed_hit_simulation(guessed_zone, hitter, pitch)
+
 
     def play_half_inning
-        display.render(current_pitcher, current_hitter)
+        display.render(current_pitcher, current_hitter, away_team, home_team, inning_outs, balls, strikes)
         until inning_over?
-            pitch(current_pitcher)
-            swing(current_hitter)
+            current_batter_pitcher_simulation
 
     end
 
