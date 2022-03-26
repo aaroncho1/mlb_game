@@ -30,8 +30,17 @@ class Game
         game_outs == 27 && score_difference != 0
     end
 
-    def inning_over?
+    def half_inning_over?
         @inning_outs == 3
+    end
+
+    def inning_over?
+        @game_outs % 6 == 0
+    end
+
+    def add_out
+        game_outs += 1
+        inning_outs += 1
     end
 
     def corner_pitch_simulator(pitcher)
@@ -149,6 +158,7 @@ class Game
     def current_batter_pitcher_simulation
         pitch_result = pitch(current_pitcher) #:S or :B
         swing(current_hitter, pitch_result)
+    end
 
     def guessed_hit_simulation(guessed_zone, hitter, pitch)
         if guessed_zone == current_pitch_zone[0]
@@ -156,7 +166,13 @@ class Game
             in_play_guessed_simulation(hitter)
         else 
             strikes += 1
-            strikeout? ? puts "Strikeout!" : puts "Strike swinging"
+            if strikeout?
+                puts "Strikeout!"
+                add_out
+                switch_batter
+            else
+                puts "Strike swinging"
+            end
         end
     end
 
@@ -177,33 +193,52 @@ class Game
         swing_choice = hitter.swing?
         if swing_choice == "y" && pitch == :B  
             strikes += 1
-            strikeout? ? puts "Strikeout!" : puts "Strike swinging"
+            if strikeout?
+                puts "Strikeout!"
+                add_out
+                switch_batter
+            else
+                puts "Strike swinging"
+            end
         elsif swing_choice == "y" && pitch == :S 
             result = SWING_ON_STRIKE_OPTOINS.sample
             if result == :h  
                 in_play_simulation(hitter)
             elsif result == :f  
-                puts "foul"
                 strikes += 1 unless strikes == 2
-            elsif result == :s  
-                strikeout? ? puts "Strikeout!" : puts "Strike swinging"
+                puts "foul"
+            elsif result == :s
+                strikes += 1  
+                if strikeout?
+                    puts "Strikeout!"
+                    switch_batter
+                else
+                    puts "Strike swinging"
+                end
             end
         elsif swing_choice == "n" && pitch == :B   
             balls += 1 
             if walk?
                 puts "Walk!"
                 move_players
+                switch_batter
             end
         elsif swing_choice == "n" && pitch == :S   
             strikes += 1
-            strikeout? ? puts "Strikeout!" : puts "Strike looking"
+            if strikeout?
+                puts "Strikeout!"
+                add_out
+                switch_batter
+            else
+                puts "Strike looking"
+            end
         end
     end
 
     def play_half_inning
         display.render(current_pitcher, current_hitter, away_team, home_team, inning_outs, balls, strikes)
-        until inning_over?
-                current_batter_pitcher_simulation
+        current_batter_pitcher_simulation
+                
 
 
     end
@@ -220,12 +255,18 @@ class Game
         system("clear") if selected_key == "s"
     end
 
+    def reset_inning
+        @game_outs, @inning_outs, @balls, @strikes = 0, 0, 0, 0
+        @inning += 1 if inning_over?
+    end
+
     def play
         welcome_message
         enter_to_start
-        until game_won?
+        until game_won? #outs == 27
             play_half_inning
-            switch_sides
+            switch_sides if half_inning_over?
+            reset_inning
         end
     end
 end
