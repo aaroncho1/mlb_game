@@ -158,7 +158,7 @@ class Game
         end
     end
 
-    def walk
+    def walk?
         balls == 4
     end
 
