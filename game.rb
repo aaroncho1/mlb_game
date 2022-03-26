@@ -127,7 +127,7 @@ class Game
     def in_play_guessed_simulation(hitter)
         result = hitter.guessed_tendencies.sample #0,1,2,3,4
         if hit?(result)
-            move_players
+            move_players(result)
             record_hit(result)
         else
             record_out
@@ -143,7 +143,7 @@ class Game
     def in_play_simulation(hitter)
         result = corner_pitch? ? hitter.corner_tendencies.sample : hitter.tendencies.sample
         if hit?(result)
-            move_players
+            move_players(result)
             record_hit(result)
         else
             record_out
@@ -220,7 +220,7 @@ class Game
             balls += 1 
             if walk?
                 puts "Walk!"
-                move_players
+                move_players(1)
                 switch_batter
             end
         elsif swing_choice == "n" && pitch == :S   
@@ -238,9 +238,7 @@ class Game
     def play_half_inning
         display.render(current_pitcher, current_hitter, away_team, home_team, inning_outs, balls, strikes)
         current_batter_pitcher_simulation
-                
-
-
+            
     end
 
     def welcome_message
