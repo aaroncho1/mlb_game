@@ -63,16 +63,16 @@ class Game
     end
 
     def throw_pitch(pitcher, pitch, zone)
-        tendencies = pitcher.tendencies[pitch]
+        tendencies = pitcher.tendencies[pitch] #{ :fastball => [:S, :S, :B]
         first_result = tendencies.sample 
         result = second_result(pitcher, first_result, zone)
-        result
+        result #:S or :B
     end
 
     def pitch(pitcher)
-        pitch = pitcher.choose_pitch
-        zone = pitcher.choose_zone
-        @current_pitch_zone = zone
+        pitch = pitcher.choose_pitch #:fastball
+        zone = pitcher.choose_zone #[2,0]
+        @current_pitch_zone = zone #resets the current pitch with each pitch
         result = throw_pitch(pitcher, pitch, zone)
         result # :S or :B
     end
@@ -151,6 +151,7 @@ class Game
 
     def guessed_hit_simulation(guessed_zone, hitter, pitch)
         if guessed_zone == current_pitch_zone[0]
+            puts "Pitch guessed correctly"
             in_play_guessed_simulation(hitter)
         else 
             strikes += 1
