@@ -52,7 +52,7 @@ class Game
             [:S, :S, :S, :S, :S, :S, :B, :B, :B, :B].sample
         end
 
-    def pitch_result(pitcher, first_result, zone)
+    def second_result(pitcher, first_result, zone)
         if first_result == :S && CORNERS.include?(zone)
             corner_pitch_simulator(pitcher)
         elsif first_result == :S && !CORNERS.include?(zone)
@@ -65,7 +65,7 @@ class Game
     def throw_pitch(pitcher, pitch, zone)
         tendencies = pitcher.tendencies[pitch]
         first_result = tendencies.sample 
-        result = pitch_result(pitcher, first_result, zone)
+        result = second_result(pitcher, first_result, zone)
         result
     end
 
@@ -74,19 +74,63 @@ class Game
         zone = pitcher.choose_zone
         @current_pitch_zone = zone
         result = throw_pitch(pitcher, pitch, zone)
+        result # :S or :B
+    end
+
+    def hit?(result)
+        result.any?(|num| num > 0)
+    end
+
+    def sleep_and_clear
+        sleep 1.50
+        system("clear")
+    end
+
+    def record_hit(result)
+        case result
+        when 1
+            puts "Single!"
+            sleep_and_clear
+        when 2
+            puts "Double!"
+            sleep_and_clear
+        when 3
+            puts "Triple!"
+            sleep_and_clear
+        when 4
+            puts "HOME RUN!"
+            sleep_and_clear
+        end
+    end
+
+    def record_out
+        out_result = [:g, :f].sample
+        if out_result == :g && display.bases[0].is_a?(Hitter)
+            double_play_simulation
+        end
+    end
+
+    def in_play_simulation(hitter)
+        result = hitter.tendencies.sample #0,1,2,3
+        if hit?(result)
+            move_players
+            record_hit(result)
+        else
+            record_out
+        end
     end
 
     def current_batter_pitcher_simulation
         pitch_result = pitch(current_pitcher)
         swing(current_hitter, pitch_result)
 
-    def guessed_hit_simulation(zone, hitter, pitch)
-        if zone == current_pitch_zone[0]
-            in_play_simulation
+    def guessed_hit_simulation(guessed_zone, hitter, pitch)
+        if guessed_zone == current_pitch_zone[0]
+            in_play_simulation(hitter)
 
 
     def swing(hitter, pitch)
-        guessed_zone = hitter.guess_pitch?
+        guessed_zone = hitter.guess_pitch? # 0,1,2 or false
         if guessed_zone
             guessed_hit_simulation(guessed_zone, hitter, pitch)
 
