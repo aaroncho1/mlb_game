@@ -88,14 +88,21 @@ class Game
 
     end
 
-
-    def play
+    def welcome_message
         puts "Welcome to MLB 2 Player Game! The selected teams and players have been added."
         puts "For the pitching player, use the number keys to select pitch zone (i.e, 0 2 for top right corner)"
         puts "For the hitting player, follow the options given on the screen"
         puts "Type 's' and 'enter' to start game"
+    end
+
+    def enter_to_start
         selected_key = gets.chomp
         system("clear") if selected_key == "s"
+    end
+
+    def play
+        welcome_message
+        enter_to_start
         until game_won?
             play_half_inning
             switch_sides
