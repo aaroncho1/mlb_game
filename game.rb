@@ -1,5 +1,5 @@
 class Game
-    CORNERS = []
+    CORNERS = [[0,0], [0,2], [2,0] [2,2]]
     attr_reader :display, :away_team, :home_team
     attr_accessor :game_outs, :inning_outs, :inning, :current_pitcher, 
     :current_hitter, :current_pitch_zone, :strike_zone, :balls, :strikes
@@ -125,13 +125,13 @@ class Game
         switch_batter
     end
 
-    def corner_pitch?(pitch_zone)
-        CORNERS.include?(pitch_zone)
+    def corner_pitch?
+        CORNERS.include?(current_pitch_zone)
     end
 
 
-    def in_play_simulation(hitter, pitch_zone)
-        result = corner_pitch?(pitch_zone) ? hitter.corner_tendencies.sample : hitter.tendencies.sample
+    def in_play_simulation(hitter)
+        result = corner_pitch? ? hitter.corner_tendencies.sample : hitter.tendencies.sample
         if hit?(result)
             move_players
             record_hit(result)
@@ -167,17 +167,17 @@ class Game
         if guessed_zone
             guessed_hit_simulation(guessed_zone, hitter, pitch)
         else
-            hit_simulation(hitter, current_pitch_zone, pitch)
+            hit_simulation(hitter, pitch)
         end
     end
 
-    def hit_simulation(hitter, current_pitch_zone, pitch)
+    def hit_simulation(hitter, pitch)
         swing_choice = hitter.swing?
         if swing_choice == "y" && pitch == :B  
             strikes += 1
             strikeout? ? puts "Strikeout!" : puts "Strike swinging"
         elsif swing_choice == "y" && pitch == :S 
-            in_play_simulation(hitter, current_pitch_zone)
+            in_play_simulation(hitter)
 
 
 
