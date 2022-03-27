@@ -8,6 +8,11 @@ class Display
     def show_pitch_options
     end
 
+    def move_players(bases, player)
+        bases.unshift(player)
+        (bases - 1).times {bases.unshift("empty")}
+    end
+
     def show_bases
         bases.each_with_index do |player, i|
             if i == 0

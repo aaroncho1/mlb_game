@@ -124,10 +124,15 @@ class Game
         end
     end
 
+    def update_bases(result)
+        display.bases << current_hitter
+        display.move_players(result, current_hitter)
+    end
+
     def in_play_guessed_simulation(hitter)
         result = hitter.guessed_tendencies.sample #0,1,2,3,4
         if hit?(result)
-            move_players(result)
+            update_bases(result)
             record_hit(result)
         else
             record_out
@@ -143,7 +148,7 @@ class Game
     def in_play_simulation(hitter)
         result = corner_pitch? ? hitter.corner_tendencies.sample : hitter.tendencies.sample
         if hit?(result)
-            move_players(result)
+            update_bases(result)
             record_hit(result)
         else
             record_out
@@ -220,7 +225,7 @@ class Game
             balls += 1 
             if walk?
                 puts "Walk!"
-                move_players(1)
+                update_bases(1)
                 switch_batter
             end
         elsif swing_choice == "n" && pitch == :S   
