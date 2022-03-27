@@ -30,3 +30,5 @@ class Hitter
     end
 
 end
+
+Hitter.new("Aaron Judge", Team.new("NYY"), "RF", [], [], [])

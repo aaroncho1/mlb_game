@@ -159,8 +159,10 @@ class Game
         if hit?(result)
             record_hit(result)
             update_bases(result)
+            switch_batter
         else
             record_out
+            switch_batter
         end
         switch_batter
     end
