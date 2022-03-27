@@ -124,16 +124,25 @@ class Game
         end
     end
 
+    def score_runs
+        players_scored = display.bases.select{|player| display.bases.index(player) > 2}
+        @hitting_team.runs += players_scored.count
+        players_scored.each do |player|
+            puts "#{player.name} scored"
+        end
+    end 
+
     def update_bases(result)
         display.bases << current_hitter
         display.move_players(result, current_hitter)
+        score_runs if display.bases.length > 3
     end
 
     def in_play_guessed_simulation(hitter)
         result = hitter.guessed_tendencies.sample #0,1,2,3,4
         if hit?(result)
-            update_bases(result)
             record_hit(result)
+            update_bases(result)
         else
             record_out
         end
@@ -148,8 +157,8 @@ class Game
     def in_play_simulation(hitter)
         result = corner_pitch? ? hitter.corner_tendencies.sample : hitter.tendencies.sample
         if hit?(result)
-            update_bases(result)
             record_hit(result)
+            update_bases(result)
         else
             record_out
         end
