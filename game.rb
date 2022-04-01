@@ -2,7 +2,7 @@ class Game
     CORNERS = [[0,0], [0,2], [2,0] [2,2]]
     SWING_ON_STRIKE_OPTOINS = [:s, :s, :f, :f, :h, :h, :h, :h]
     attr_reader :display, :away_team, :home_team
-    attr_accessor :game_outs, :inning_outs, :inning, :current_pitcher, 
+    attr_accessor :game_outs, :inning_outs, :inning, :current_pitcher, :inning_half,
     :current_hitter, :current_pitch_zone, :strike_zone, :balls, :strikes
 
     def initialize(away_team, home_team, away_team_hitters, away_team_pitchers, 
@@ -11,6 +11,7 @@ class Game
         @away_team_hitters, @home_team_hitters = away_team_hitters, home_team_hitters
         @away_team_pitchers, @home_team_pitchers = away_team_pitchers, away_team_pitchers
         @game_outs, @inning_outs, @balls, @strikes, @inning = 0, 0, 0, 0, 1
+        @inning_half = "Top"
         @pitching_team, @hitting_team = home_team, away_team
         @display = Display.new
         @current_pitcher, @current_hitter, @current_pitch_zone = nil, nil, nil
@@ -252,7 +253,8 @@ class Game
     end
 
     def play_half_inning
-        display.render(current_pitcher, current_hitter, away_team, home_team, inning_outs, balls, strikes)
+        display.render(current_pitcher, current_hitter, away_team, home_team, 
+        inning, inning_half, inning_outs, balls, strikes)
         current_batter_pitcher_simulation
             
     end

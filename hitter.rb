@@ -1,7 +1,7 @@
 class Hitter
 
     attr_reader :team, :position, :tendencies, :guessed_tendencies, :corner_tendencies
-    attr_accessor :base
+    attr_accessor :base, :hits, :at_bats, :homers, :rbis
     def initialize(name, team, position, tendencies, guessed_tendencies, corner_tendencies)
         @name = name
         @position = position
@@ -9,6 +9,7 @@ class Hitter
         @guessed_tendencies = guessed_tendencies
         @corner_tendencies
         @base = 0
+        @hits, @at_bats, @homers, @rbis = 0, 0, 0, 0
     end
 
     def guess_pitch
@@ -31,4 +32,3 @@ class Hitter
 
 end
 
-Hitter.new("Aaron Judge", Team.new("NYY"), "RF", [], [], [])
