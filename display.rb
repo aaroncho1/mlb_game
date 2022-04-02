@@ -31,7 +31,7 @@ class Display
     def render(pitcher, hitter, away_team, home_team, inning, 
         inning_half, inning_outs, balls, strikes, strike_zone)
         show_bases_and_score(away_team, home_team, inning_half, inning)
-        puts "#{balls}-#{strikes}, #{inning_outs}"
+        puts "#{balls}-#{strikes}, #{inning_outs} outs"
         puts ""
         strike_zone.each do |row|
             puts row.join(" ").ljust(PITCH_BOX_WIDTH)

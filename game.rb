@@ -7,8 +7,8 @@ class Game
     CORNERS = [[0,0], [0,2], [2,0] [2,2]]
     SWING_ON_STRIKE_OPTOINS = [:s, :s, :f, :f, :h, :h, :h, :h]
     attr_reader :display, :away_team, :home_team
-    attr_accessor :game_outs, :inning_outs, :inning, :current_pitcher, :inning_half,
-    :current_hitter, :current_pitch_zone, :strike_zone, :balls, :strikes
+    attr_accessor :game_outs, :inning_outs, :inning, :current_pitcher, :inning_half, :pitching_team,
+    :hitting_team, :current_hitter, :current_pitch_zone, :strike_zone, :balls, :strikes
 
     def initialize(away_team, home_team, away_team_hitters, away_team_pitchers, 
         home_team_hitters, home_team_pitchers)
@@ -19,8 +19,13 @@ class Game
         @inning_half = "Top"
         @pitching_team, @hitting_team = home_team, away_team
         @display = Display.new
-        @current_pitcher, @current_hitter, @current_pitch_zone = nil, nil, nil
+        @current_pitcher, @current_hitter, @current_pitch_zone, @current_pitch = nil, hitting_team.players[0], nil, nil
         @strike_zone = Array.new(3){Array.new(3, "_")}
+    end
+
+    def switch_batter
+        last_hitter = @hitting_team.players.shift
+        @hitting_team.players.push(last_hitter)
     end
 
     def score_difference
@@ -49,32 +54,6 @@ class Game
         inning_outs += 1
     end
 
-    def hit?(result)
-        result.any?(|num| num > 0)
-    end
-
-    def sleep_and_clear
-        sleep 1.50
-        system("clear")
-    end
-
-    def record_hit(result)
-        case result
-        when 1
-            puts "Single!"
-            sleep_and_clear
-        when 2
-            puts "Double!"
-            sleep_and_clear
-        when 3
-            puts "Triple!"
-            sleep_and_clear
-        when 4
-            puts "HOME RUN!"
-            sleep_and_clear
-        end
-    end
-
     def record_out
         out_result = [:g, :f].sample
         if out_result == :g && display.bases[0].is_a?(Hitter)
@@ -98,17 +77,6 @@ class Game
         display.bases << current_hitter
         display.move_players(result, current_hitter)
         score_runs if display.bases.length > 3
-    end
-
-    def in_play_guessed_simulation(hitter)
-        result = hitter.guessed_tendencies.sample #0,1,2,3,4
-        if hit?(result)
-            record_hit(result)
-            update_bases(result)
-        else
-            record_out
-        end
-        switch_batter
     end
 
     def corner_pitch?
@@ -146,10 +114,9 @@ class Game
     def pitch(pitcher)
         pitch = pitcher.choose_pitch #:fastball
         zone = pitcher.choose_zone #[2,0]
-        system("clear")
-        display.render(current_pitcher, current_hitter, away_team, home_team, 
-        inning, inning_half, inning_outs, balls, strikes, @strike_zone)
+        refresh
         @current_pitch_zone = zone #resets the current pitch with each pitch
+        @current_pitch = pitch
         result = throw_pitch(pitcher, pitch, zone)
         update_strike_zone(result, zone)
         result # :S or :B
@@ -205,19 +172,37 @@ class Game
         @strike_zone = Array.new(3){Array.new(3, "_")}
     end
 
-    def swing(hitter, pitch)
-        guessed_zone = hitter.guess_pitch? # 0,1,2 or false
+    def swing(hitter, pitch_result)
+        guessed_zone = hitter.guess_zone? # 0,1,2 or false
         if guessed_zone
-            guessed_hit_simulation(guessed_zone, hitter, pitch)
+            guessed_hit_simulation(guessed_zone, hitter, pitch_result)
         else
-            hit_simulation(hitter, pitch)
+            hit_simulation(hitter, pitch_result)
         end
     end
 
-    def guessed_hit_simulation(guessed_zone, hitter, pitch)
+    def guessed_hit_simulation(guessed_zone, hitter, pitch_result)
+        guessed_pitch = hitter.guess_pitch?(@current_pitch)
+        refresh
+        if guessed_pitch
+            if guessed_pitch == @current_pitch && guessed_zone == current_pitch_zone[0]
+                puts "Pitch zone and pitch type guessed correctly"
+                in_play_guessed_pitch_simulation(hitter)
+            else
+                strikes += 1
+                if strikeout?
+                    puts "Strikeout!"
+                    add_out
+                    switch_batter
+                else
+                    puts "Strike swinging"
+                end
+            end
+        end
+
         if guessed_zone == current_pitch_zone[0]
-            puts "Pitch guessed correctly"
-            in_play_guessed_simulation(hitter)
+            puts "Pitch zone guessed correctly"
+            in_play_guessed_zone_simulation(hitter)
         else 
             strikes += 1
             if strikeout?
@@ -228,15 +213,71 @@ class Game
                 puts "Strike swinging"
             end
         end
+        refresh
+    end
+
+    def in_play_guessed_pitch_simulation(hitter)
+        hash = hitter.tendencies #0,1,2,3,4 {0 => 120, 1 => 60, 2 => 11, 3 => 1, 4 => 9} out of 200 AB
+        guessed_tendencies = []
+        hash.each do |k, v|
+            if k == 0
+                guessed_tendencies += [k] * (v/2)
+            else
+                guessed_tendencies += [k] * (v * 2)
+            end
+        end
+        result = guessed_tendencies.sample
+        if hit?(result)
+            record_hit(result)
+            update_bases(result)
+        else
+            record_out
+        end
+        switch_batter
+        refresh
+    end
+
+    def in_play_guessed_zone_simulation(hitter)
+        hash = hitter.tendencies #0,1,2,3,4 {0 => 120, 1 => 60, 2 => 11, 3 => 1, 4 => 9} 
+        guessed_tendencies = []
+        hash.each do |k, v|
+            guessed_tendencies += [k] * (v * 2)
+        end
+        result = guessed_tendencies.sample
+        if hit?(result)
+            record_hit(result)
+            update_bases(result)
+        else
+            record_out
+        end
+        switch_batter
+        refresh
+    end
+
+    def hit?(result)
+        result > 0
+    end
+
+    def record_hit(result)
+        case result
+        when 1
+            puts "Single!"
+        when 2
+            puts "Double!"
+        when 3
+            puts "Triple!"
+        when 4
+            puts "HOME RUN!"
+        end
     end
 
     def walk?
         balls == 4
     end
 
-    def hit_simulation(hitter, pitch)
+    def hit_simulation(hitter, pitch_result)
         swing_choice = hitter.swing?
-        if swing_choice == "y" && pitch == :B  
+        if swing_choice == "y" && pitch_result == :B  
             strikes += 1
             if strikeout?
                 puts "Strikeout!"
@@ -245,7 +286,7 @@ class Game
             else
                 puts "Strike swinging"
             end
-        elsif swing_choice == "y" && pitch == :S 
+        elsif swing_choice == "y" && pitch_result == :S 
             result = SWING_ON_STRIKE_OPTIONS.sample
             if result == :h  
                 in_play_simulation(hitter)
@@ -261,14 +302,14 @@ class Game
                     puts "Strike swinging"
                 end
             end
-        elsif swing_choice == "n" && pitch == :B   
+        elsif swing_choice == "n" && pitch_result == :B   
             balls += 1 
             if walk?
                 puts "Walk!"
                 update_bases(1)
                 switch_batter
             end
-        elsif swing_choice == "n" && pitch == :S   
+        elsif swing_choice == "n" && pitch_result == :S   
             strikes += 1
             if strikeout?
                 puts "Strikeout!"
@@ -278,6 +319,13 @@ class Game
                 puts "Strike looking"
             end
         end
+        refresh
+    end
+
+    def refresh
+        system("clear")
+        display.render(current_pitcher, current_hitter, away_team, home_team, 
+        inning, inning_half, inning_outs, balls, strikes, @strike_zone)
     end
 
     def welcome_message
