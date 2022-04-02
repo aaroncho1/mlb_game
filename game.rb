@@ -1,3 +1,8 @@
+require_relative 'hitter'
+require_relative 'pitcher'
+require_relative 'team'
+require_relative 'display'
+
 class Game
     CORNERS = [[0,0], [0,2], [2,0] [2,2]]
     SWING_ON_STRIKE_OPTOINS = [:s, :s, :f, :f, :h, :h, :h, :h]
@@ -15,7 +20,7 @@ class Game
         @pitching_team, @hitting_team = home_team, away_team
         @display = Display.new
         @current_pitcher, @current_hitter, @current_pitch_zone = nil, nil, nil
-        @strike_zone = Array.new(3){Array.new(3, :X)}
+        @strike_zone = Array.new(3){Array.new(3, "_")}
     end
 
     def score_difference
@@ -42,50 +47,6 @@ class Game
     def add_out
         game_outs += 1
         inning_outs += 1
-    end
-
-    def corner_pitch_simulator(pitcher)
-        if pitcher.stamina >= 200
-            [:S, :S, :S, :S, :S, :S, :S, :S, :B, :B].sample
-        elsif pitcher.stamina >= 100
-            [:S, :S, :S, :S, :S, :S, :B, :B, :B, :B].sample
-        else
-            [:S, :S, :S, :S, :B, :B, :B, :B, :B, :B].sample
-        end
-    end
-
-    def middle_pitch_simulator(pitcher)
-        if pitcher.stamina >= 200
-            [:S, :S, :S, :S, :S, :S, :S, :S, :S, :B].sample
-        elsif pitcher.stamina >= 100
-            [:S, :S, :S, :S, :S, :S, :S, :B, :B, :B].sample
-        else
-            [:S, :S, :S, :S, :S, :S, :B, :B, :B, :B].sample
-        end
-
-    def second_result(pitcher, first_result, zone)
-        if first_result == :S && CORNERS.include?(zone)
-            corner_pitch_simulator(pitcher)
-        elsif first_result == :S && !CORNERS.include?(zone)
-            middle_pitch_simulator(pitcher)
-        elsif first_result == :B    
-            :B   
-        end
-    end
-
-    def throw_pitch(pitcher, pitch, zone)
-        tendencies = pitcher.tendencies[pitch] #{ :fastball => [:S, :S, :B]
-        first_result = tendencies.sample 
-        result = second_result(pitcher, first_result, zone)
-        result #:S or :B
-    end
-
-    def pitch(pitcher)
-        pitch = pitcher.choose_pitch #:fastball
-        zone = pitcher.choose_zone #[2,0]
-        @current_pitch_zone = zone #resets the current pitch with each pitch
-        result = throw_pitch(pitcher, pitch, zone)
-        result # :S or :B
     end
 
     def hit?(result)
@@ -154,7 +115,6 @@ class Game
         CORNERS.include?(current_pitch_zone)
     end
 
-
     def in_play_simulation(hitter)
         result = corner_pitch? ? hitter.corner_tendencies.sample : hitter.tendencies.sample
         if hit?(result)
@@ -172,9 +132,86 @@ class Game
         strikes == 3
     end
 
+    def play_half_inning
+        display.render(current_pitcher, current_hitter, away_team, home_team, 
+        inning, inning_half, inning_outs, balls, strikes, @strike_zone)
+        current_batter_pitcher_simulation   
+    end
+
     def current_batter_pitcher_simulation
         pitch_result = pitch(current_pitcher) #:S or :B
         swing(current_hitter, pitch_result)
+    end
+
+    def pitch(pitcher)
+        pitch = pitcher.choose_pitch #:fastball
+        zone = pitcher.choose_zone #[2,0]
+        system("clear")
+        display.render(current_pitcher, current_hitter, away_team, home_team, 
+        inning, inning_half, inning_outs, balls, strikes, @strike_zone)
+        @current_pitch_zone = zone #resets the current pitch with each pitch
+        result = throw_pitch(pitcher, pitch, zone)
+        update_strike_zone(result, zone)
+        result # :S or :B
+    end
+
+    def throw_pitch(pitcher, pitch, zone)
+        selected_pitch_hash = pitcher.tendencies[pitch] #{:fastball => {:S => 8, :B => 2}}
+        selected_pitch_tendencies = []
+        selected_pitch_hash.each do |pitch_type , n|
+            selected_pitch_tendencies += [pitch_type] * n
+        end
+        first_result = selected_pitch_tendencies.sample 
+        result = second_result(pitcher, first_result, zone)
+        result #:S or :B
+    end
+
+    def second_result(pitcher, first_result, zone)
+        if first_result == :S && CORNERS.include?(zone)
+            corner_pitch_simulator(pitcher)
+        elsif first_result == :S && !CORNERS.include?(zone)
+            middle_pitch_simulator(pitcher)
+        elsif first_result == :B    
+            :B   
+        end
+    end
+
+    def corner_pitch_simulator(pitcher)
+        if pitcher.stamina >= 200
+            [:S, :S, :S, :S, :S, :S, :S, :S, :B, :B].sample
+        elsif pitcher.stamina >= 100
+            [:S, :S, :S, :S, :S, :S, :B, :B, :B, :B].sample
+        else
+            [:S, :S, :S, :S, :B, :B, :B, :B, :B, :B].sample
+        end
+    end
+
+    def middle_pitch_simulator(pitcher)
+        if pitcher.stamina >= 200
+            [:S, :S, :S, :S, :S, :S, :S, :S, :S, :B].sample
+        elsif pitcher.stamina >= 100
+            [:S, :S, :S, :S, :S, :S, :S, :B, :B, :B].sample
+        else
+            [:S, :S, :S, :S, :S, :S, :B, :B, :B, :B].sample
+        end
+    end
+
+    def update_strike_zone(result, zone)
+        row, col = zone
+        @strike_zone[row][col] = result
+    end
+
+    def reset_strike_zone
+        @strike_zone = Array.new(3){Array.new(3, "_")}
+    end
+
+    def swing(hitter, pitch)
+        guessed_zone = hitter.guess_pitch? # 0,1,2 or false
+        if guessed_zone
+            guessed_hit_simulation(guessed_zone, hitter, pitch)
+        else
+            hit_simulation(hitter, pitch)
+        end
     end
 
     def guessed_hit_simulation(guessed_zone, hitter, pitch)
@@ -197,15 +234,6 @@ class Game
         balls == 4
     end
 
-    def swing(hitter, pitch)
-        guessed_zone = hitter.guess_pitch? # 0,1,2 or false
-        if guessed_zone
-            guessed_hit_simulation(guessed_zone, hitter, pitch)
-        else
-            hit_simulation(hitter, pitch)
-        end
-    end
-
     def hit_simulation(hitter, pitch)
         swing_choice = hitter.swing?
         if swing_choice == "y" && pitch == :B  
@@ -218,7 +246,7 @@ class Game
                 puts "Strike swinging"
             end
         elsif swing_choice == "y" && pitch == :S 
-            result = SWING_ON_STRIKE_OPTOINS.sample
+            result = SWING_ON_STRIKE_OPTIONS.sample
             if result == :h  
                 in_play_simulation(hitter)
             elsif result == :f  
@@ -250,13 +278,6 @@ class Game
                 puts "Strike looking"
             end
         end
-    end
-
-    def play_half_inning
-        display.render(current_pitcher, current_hitter, away_team, home_team, 
-        inning, inning_half, inning_outs, balls, strikes)
-        current_batter_pitcher_simulation
-            
     end
 
     def welcome_message

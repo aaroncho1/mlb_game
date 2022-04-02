@@ -28,14 +28,14 @@ class Display
         end
     end 
 
-    def render(pitcher, hitter, away_team, home_team, 
-        inning, inning_half, inning_outs, balls, strikes)
+    def render(pitcher, hitter, away_team, home_team, inning, 
+        inning_half, inning_outs, balls, strikes, strike_zone)
         show_bases_and_score(away_team, home_team, inning_half, inning)
         puts "#{balls}-#{strikes}, #{inning_outs}"
         puts ""
-        puts "#{"".ljust(PITCH_BOX_WIDTH)} 00 01 02"
-        puts "#{"".ljust(PITCH_BOX_WIDTH)} 10 11 12"
-        puts "#{"".ljust(PITCH_BOX_WIDTH)} 20 21 22"
+        strike_zone.each do |row|
+            puts row.join(" ").ljust(PITCH_BOX_WIDTH)
+        end
         puts ""
         puts "At bat: #{hitter.name} (#{hitter.hits}-#{hitter.at_bats},#{hitter.homers} HR #{hitter.rbis} RBI"
         puts "Pitching: #{pitcher.name} (#{pitcher.pitches} P, #{pitcher.earned_runs} ER)"
