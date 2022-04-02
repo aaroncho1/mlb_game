@@ -10,8 +10,7 @@ class Game
     attr_accessor :game_outs, :inning_outs, :inning, :current_pitcher, :inning_half, :pitching_team,
     :hitting_team, :current_hitter, :current_pitch_zone, :strike_zone, :balls, :strikes
 
-    def initialize(away_team, home_team, away_team_hitters, away_team_pitchers, 
-        home_team_hitters, home_team_pitchers)
+    def initialize(away_team, home_team)
         @away_team, @home_team = away_team, home_team
         @away_team_hitters, @home_team_hitters = away_team_hitters, home_team_hitters
         @away_team_pitchers, @home_team_pitchers = away_team_pitchers, away_team_pitchers
@@ -24,8 +23,8 @@ class Game
     end
 
     def switch_batter
-        last_hitter = @hitting_team.players.shift
-        @hitting_team.players.push(last_hitter)
+        last_hitter = @hitting_team.hitters.shift
+        @hitting_team.hitters.push(last_hitter)
     end
 
     def score_difference
@@ -84,7 +83,21 @@ class Game
     end
 
     def in_play_simulation(hitter)
-        result = corner_pitch? ? hitter.corner_tendencies.sample : hitter.tendencies.sample
+        if corner_pitch?
+            hash = hitter.tendencies
+            tendencies = []
+            hash.each do |k,v|
+                if k == 0
+                    tendencies += [k] * (v + (v/4))
+                else
+                    tendencies += [k] * v
+                end
+            end
+            result = tendencies.sample
+        else
+            result = hitter.tendencies.sample
+        end
+
         if hit?(result)
             record_hit(result)
             update_bases(result)
@@ -217,7 +230,7 @@ class Game
     end
 
     def in_play_guessed_pitch_simulation(hitter)
-        hash = hitter.tendencies #0,1,2,3,4 {0 => 120, 1 => 60, 2 => 11, 3 => 1, 4 => 9} out of 200 AB
+        hash = hitter.tendencies #0,1,2,3,4 {0 => 120, 1 => 45, 2 => 11, 3 => 1, 4 => 9} out of 200 AB
         guessed_tendencies = []
         hash.each do |k, v|
             if k == 0
