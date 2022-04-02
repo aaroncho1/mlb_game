@@ -1,8 +1,8 @@
 class Hitter
 
-    attr_reader :team, :position, :tendencies
+    attr_reader :position, :tendencies, :speed
     attr_accessor :base, :hits, :at_bats, :homers, :rbis
-    def initialize(name, team, position, tendencies)
+    def initialize(name, position, tendencies, speed)
         @name = name
         @position = position
         @tendencies = tendencies 
