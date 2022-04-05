@@ -12,8 +12,8 @@ class Game
 
     def initialize(away_team, home_team)
         @away_team, @home_team = away_team, home_team
-        @away_team_hitters, @home_team_hitters = away_team_hitters, home_team_hitters
-        @away_team_pitchers, @home_team_pitchers = away_team_pitchers, away_team_pitchers
+        @away_team_hitters, @home_team_hitters = away_team.hitters, home_team.hitters
+        @away_team_pitchers, @home_team_pitchers = away_team.pitchers, home_team.pitchers
         @game_outs, @inning_outs, @balls, @strikes, @inning = 0, 0, 0, 0, 1
         @inning_half = "Top"
         @pitching_team, @hitting_team = home_team, away_team
@@ -157,9 +157,9 @@ class Game
     end
 
     def corner_pitch_simulator(pitcher)
-        if pitcher.stamina >= 200
+        if pitcher.stamina >= 100
             [:S, :S, :S, :S, :S, :S, :S, :S, :B, :B].sample
-        elsif pitcher.stamina >= 100
+        elsif pitcher.stamina >= 50
             [:S, :S, :S, :S, :S, :S, :B, :B, :B, :B].sample
         else
             [:S, :S, :S, :S, :B, :B, :B, :B, :B, :B].sample
@@ -402,24 +402,29 @@ yankees_hitters = [
 #For example, Jacob DeGrom has a 90% chance of locating his fastball for a strike, compared to 50% for his curveball
 mets_pitchers = [
     Pitcher.new("J. DeGrom", 98, {:fastball => {:S => 9, :B => 1}, :slider => {:S => 8, :B => 2}, :changeup => {:S => 7, :B => 3}, 
-    :curveball => {:S => 5, :B => 5}}, 204, {1 => :fastball, 2 => :slider, 3 => :changeup, 4 => :curveball}),
+    :curveball => {:S => 5, :B => 5}}, 2, {1 => :fastball, 2 => :slider, 3 => :changeup, 4 => :curveball}),
     Pitcher.new("M. Scherzer", 96, {:fastball => {:S => 8, :B => 2}, :slider => {:S => 7, :B => 3}, :changeup => {:S => 7, :B => 3}, 
-    :curveball => {:S => 6, :B => 4}}, 220, {1 => :fastball, 2 => :slider, 3 => :changeup, 4 => :curveball}),
+    :curveball => {:S => 6, :B => 4}}, 2, {1 => :fastball, 2 => :slider, 3 => :changeup, 4 => :curveball}),
     Pitcher.new("C. Bassitt", 86, {:fastball => {:S => 7, :B => 3}, :changeup => {:S => 6, :B => 4}, :curveball => {:S => 5, :B => 5}, 
-    :sinker => {:S => 4, :B => 6}}, 157, {1 => :fastball, 2 => :changeup, 3 => :curveball, 4 => :sinker}),
+    :sinker => {:S => 4, :B => 6}}, 2, {1 => :fastball, 2 => :changeup, 3 => :curveball, 4 => :sinker}),
     Pitcher.new("S. Lugo", 82, {:fastball => {:S => 7, :B => 3}, :curveball => {:S => 6, :B => 4}, :sinker => {:S => 4, :B => 6}, 
-    :slider => {:S => 4, :B => 6}}, 101, {1 => :fastball, 2 => :curveball, 3 => :sinker, 4 => :slider}),
-    Pitcher.new("E. Diaz", 88, {:fastball => {:S => 8, :B => 2}, :slider => {:S => 7, :B => 3}}, 66, {1 => :fastball, 2 => :slider})
+    :slider => {:S => 4, :B => 6}}, 3, {1 => :fastball, 2 => :curveball, 3 => :sinker, 4 => :slider}),
+    Pitcher.new("E. Diaz", 88, {:fastball => {:S => 8, :B => 2}, :slider => {:S => 7, :B => 3}}, 4, {1 => :fastball, 2 => :slider})
 ]
 
 yankees_pitchers = [
     Pitcher.new("G. Cole", 94, {:fastball => {:S => 8, :B => 2}, :slider => {:S => 7, :B => 3}, :curveball => {:S => 5, :B => 5}, 
-    :changeup => {:S => 5, :B => 5}}, 220, {1 => :fastball, 2 => :slider, 3 => :curveball, 4 => :changeup}),
+    :changeup => {:S => 5, :B => 5}}, 2, {1 => :fastball, 2 => :slider, 3 => :curveball, 4 => :changeup}),
     Pitcher.new("J. Montgomery", 83, {:fastball => {:S => 6, :B => 4}, :changeup => {:S => 6, :B => 4}, :curveball => {:S => 6, :B => 4}, 
-    :sinker => {:S => 4, :B => 6}}, 157, {1 => :fastball, 2 => :changeup, 3 => :curveball, 4 => :sinker}),
+    :sinker => {:S => 4, :B => 6}}, 2, {1 => :fastball, 2 => :changeup, 3 => :curveball, 4 => :sinker}),
     Pitcher.new("L. Severino", 81, {:fastball => {:S => 6, :B => 4}, :slider => {:S => 5, :B => 5}, :changeup => {:S => 5, :B => 5}},
-    191, {1 => :fastball, 2 => :slider, 3 => :changeup}),
+    2, {1 => :fastball, 2 => :slider, 3 => :changeup}),
     Pitcher.new("J. Loaisiga", 85, {:fastball => {:S => 4, :B => 6}, :sinker => {:S => 8, :B => 2}, :curveball => {:S => 6, :B => 4}, 
-    :changeup => {:S => 4, :B => 6}}, 101, {1 => :fastball, 2 => :sinker, 3 => :curveball, 4 => :changeup}),
-    Pitcher.new("A. Chapman", 88, {:fastball => {:S => 8, :B => 2}, :slider => {:S => 7, :B => 3}, :sinker => {:S => 3, :B => 7}}, 56, {1 => :fastball, 2 => :slider, 3 => :sinker})
+    :changeup => {:S => 4, :B => 6}}, 4, {1 => :fastball, 2 => :sinker, 3 => :curveball, 4 => :changeup}),
+    Pitcher.new("A. Chapman", 88, {:fastball => {:S => 8, :B => 2}, :slider => {:S => 7, :B => 3}, :sinker => {:S => 3, :B => 7}}, 4, {1 => :fastball, 2 => :slider, 3 => :sinker})
 ]
+
+away_team = Team.new("NYM", mets_hitters, mets_pitchers)
+home_team = Team.new("NYY", yankees_hitters, yankees_pitchers)
+
+Game.new(away_team, home_team).play

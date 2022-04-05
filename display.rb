@@ -34,7 +34,7 @@ class Display
         puts "#{balls}-#{strikes}, #{inning_outs} outs"
         puts ""
         strike_zone.each do |row|
-            puts row.join(" ").ljust(PITCH_BOX_WIDTH)
+            puts "#{" ".ljust(PITCH_BOX_WIDTH) row.join(" ")}"
         end
         puts ""
         puts "At bat: #{hitter.name} (#{hitter.hits}-#{hitter.at_bats},#{hitter.homers} HR #{hitter.rbis} RBI"

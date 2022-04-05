@@ -4,8 +4,7 @@ class Team
 
     def initialize(name, hitters, pitchers)
         @name = name 
-        @hitters = []
-        @pitchers = []
+        @hitters, @pitchers = hitters, pitchers
         @runs = 0
         @hits = 0
         @errors = 0
