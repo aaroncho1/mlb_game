@@ -18,7 +18,7 @@ class Game
         @inning_half = "Top"
         @pitching_team, @hitting_team = home_team, away_team
         @display = Display.new
-        @current_pitcher, @current_hitter, @current_pitch_zone, @current_pitch = nil, hitting_team.players[0], nil, nil
+        @current_pitcher, @current_hitter, @current_pitch_zone, @current_pitch = pitching_team.pitchers[0] , hitting_team.players[0], nil, nil
         @strike_zone = Array.new(3){Array.new(3, "_")}
     end
 
@@ -51,31 +51,6 @@ class Game
     def add_out
         game_outs += 1
         inning_outs += 1
-    end
-
-    def record_out
-        out_result = [:g, :f].sample
-        if out_result == :g && display.bases[0].is_a?(Hitter)
-            double_play_simulation
-        elsif out_result == :f && display.bases[2].is_a?(Hitter)
-            sacrifice_fly_simulation
-        else 
-            inning_outs += 1
-        end
-    end
-
-    def score_runs
-        players_scored = display.bases.select{|player| display.bases.index(player) > 2}
-        @hitting_team.runs += players_scored.count
-        players_scored.each do |player|
-            puts "#{player.name} scored"
-        end
-    end 
-
-    def update_bases(result)
-        display.bases << current_hitter
-        display.move_players(result, current_hitter)
-        score_runs if display.bases.length > 3
     end
 
     def corner_pitch?
@@ -143,7 +118,7 @@ class Game
         end
         first_result = selected_pitch_tendencies.sample 
         result = second_result(pitcher, first_result, zone)
-        update_pitcher_stats(pitcher, result)
+        update_pitching_stats(pitcher, result)
         result #:S or :B
     end
 
@@ -157,7 +132,7 @@ class Game
         end
     end
 
-    def update_pitcher_stats(pitcher, result)
+    def update_pitching_stats(pitcher, result)
         pitcher.stamina -= pitcher.stamina_interval
         pitcher.pitches += 1
         pitcher.strikes += 1 if result == :S   
@@ -202,10 +177,10 @@ class Game
     end
 
     def guessed_hit_simulation(guessed_zone, hitter, pitch_result)
-        guessed_pitch = hitter.guess_pitch?(@current_pitch)
+        guessed_pitch_num = hitter.guess_pitch?
         refresh
-        if guessed_pitch
-            if guessed_pitch == @current_pitch && guessed_zone == current_pitch_zone[0] # 1 == 1?
+        if guessed_pitch_num #current_pitch = :fastball
+            if @current_pitcher.pitch_options[guessed_pitch] == @current_pitch && guessed_zone == current_pitch_zone[0] # 1 == 1?
                 puts "Pitch zone and pitch type guessed correctly"
                 in_play_guessed_pitch_simulation(hitter)
             else
@@ -239,12 +214,16 @@ class Game
     def in_play_guessed_pitch_simulation(hitter)
         hash = hitter.tendencies #0,1,2,3,4 {0 => 120, 1 => 45, 2 => 11, 3 => 1, 4 => 9} out of 200 AB
         guessed_tendencies = []
-        hash.each do |k, v|
-            if k == 0
-                guessed_tendencies += [k] * (v/2)
-            else
-                guessed_tendencies += [k] * (v * 2)
-            end
+        if @current_pitcher.grade == "A+"
+            hash.each {|k, v| k == 0 ? guessed_tendencies += [k] * (v/2) : guessed_tendencies += [k] * v}
+        elsif @current_pitcher.grade == "A"
+            hash.each {|k, v| k == 0 ? guessed_tendencies += [k] * (v/3) : guessed_tendencies += [k] * v}
+        elsif @current_pitcher.grade == "B+"
+            hash.each {|k, v| k == 0 ? guessed_tendencies += [k] * (v/4) : guessed_tendencies += [k] * v}
+        elsif @current_pitcher.grade == "B"
+            hash.each {|k, v| k == 0 ? guessed_tendencies += [k] * (v/5) : guessed_tendencies += [k] * v}
+        else 
+            hash.each {|k, v| k == 0 ? guessed_tendencies += [k] * (v/6) : guessed_tendencies += [k] * v}
         end
         result = guessed_tendencies.sample
         if hit?(result)
@@ -288,6 +267,80 @@ class Game
             puts "Triple!"
         when 4
             puts "HOME RUN!"
+        end
+    end
+
+    def update_bases(result)
+        display.bases << current_hitter
+        display.move_players(result, current_hitter)
+        update_hitter_stats(result)
+        score_runs if display.bases.length > 3
+    end
+
+    def update_hitter_stats(result)
+        @current_hitter.hits += 1
+        @current_hitter.homers += 1 if result == 4
+        @current_hitter.at_bats += 1
+    end
+
+    def score_runs
+        players_scored = display.bases.select{|player| display.bases.index(player) > 2 && player.is_a?(Hitter)}
+        @current_hitter.rbis += players_scored.count
+        @hitting_team.runs += players_scored.count
+        players_scored.each do |player|
+            puts "#{player.name} scored"
+        end
+    end 
+
+    def record_out
+        out_result = [:g, :f].sample
+        if double_play_situation?
+            double_play_simulation
+        elsif sac_fly_situation?
+            sac_fly_simulation
+        else 
+            @current_hitter.at_bats += 1
+            inning_outs += 1
+        end
+    end
+
+    def double_play_situation?
+        out_result == :g && display.bases[0].is_a?(Hitter) && inning_outs < 2
+    end
+
+    def sac_fly_situation?
+        out_result == :f && display.bases[2].is_a?(Hitter) && inning_outs < 2
+    end
+
+    def double_play_simulation
+        if display.bases[0].speed == "A"
+            inning_outs += 1
+            display.bases << "empty"
+        else
+            inning_outs += 2
+            display.bases[0] = "empty"
+        end
+        @current_hitter.at_bats += 1
+    end
+
+    def sac_fly_simulation
+        if display.bases[2].speed == "A"
+            puts "#{display.bases[2].name} scored on a sac fly"
+            @current_hitter.rbis += 1
+            @hitting_team.runs += 1
+            @inning_outs += 1
+        elsif display.bases[2].speed == "B"
+            score_sim = [:O] * 7 + [:X] * 3
+            result = score_sim.sample
+            if result == :O 
+                puts "#{display.bases[2].name} scored on a sac fly"
+                @current_hitter.rbis += 1
+                @hitting_team.runs += 1
+                @inning_outs += 1
+            else
+                puts "Double play! #{display.bases[2].name} tagged out at home"
+                @inning_outs += 2
+            end
         end
     end
 
@@ -408,27 +461,27 @@ yankees_hitters = [
 #Group of pitchers consist of 3 SP and 2 RP, stamina is based on projected IP and pitch tendencies is based on pitch control
 #For example, Jacob DeGrom has a 90% chance of locating his fastball for a strike, compared to 50% for his curveball
 mets_pitchers = [
-    Pitcher.new("J. DeGrom", 98, {:fastball => {:S => 9, :B => 1}, :slider => {:S => 8, :B => 2}, :changeup => {:S => 7, :B => 3}, 
+    Pitcher.new("J. DeGrom", "A+", {:fastball => {:S => 9, :B => 1}, :slider => {:S => 8, :B => 2}, :changeup => {:S => 7, :B => 3}, 
     :curveball => {:S => 5, :B => 5}}, 2, {1 => :fastball, 2 => :slider, 3 => :changeup, 4 => :curveball}),
-    Pitcher.new("M. Scherzer", 96, {:fastball => {:S => 8, :B => 2}, :slider => {:S => 7, :B => 3}, :changeup => {:S => 7, :B => 3}, 
+    Pitcher.new("M. Scherzer", "A+", {:fastball => {:S => 8, :B => 2}, :slider => {:S => 7, :B => 3}, :changeup => {:S => 7, :B => 3}, 
     :curveball => {:S => 6, :B => 4}}, 2, {1 => :fastball, 2 => :slider, 3 => :changeup, 4 => :curveball}),
-    Pitcher.new("C. Bassitt", 86, {:fastball => {:S => 7, :B => 3}, :changeup => {:S => 6, :B => 4}, :curveball => {:S => 5, :B => 5}, 
+    Pitcher.new("C. Bassitt", "B+", {:fastball => {:S => 7, :B => 3}, :changeup => {:S => 6, :B => 4}, :curveball => {:S => 5, :B => 5}, 
     :sinker => {:S => 4, :B => 6}}, 2, {1 => :fastball, 2 => :changeup, 3 => :curveball, 4 => :sinker}),
-    Pitcher.new("S. Lugo", 82, {:fastball => {:S => 7, :B => 3}, :curveball => {:S => 6, :B => 4}, :sinker => {:S => 4, :B => 6}, 
+    Pitcher.new("S. Lugo", "B", {:fastball => {:S => 7, :B => 3}, :curveball => {:S => 6, :B => 4}, :sinker => {:S => 4, :B => 6}, 
     :slider => {:S => 4, :B => 6}}, 3, {1 => :fastball, 2 => :curveball, 3 => :sinker, 4 => :slider}),
-    Pitcher.new("E. Diaz", 88, {:fastball => {:S => 8, :B => 2}, :slider => {:S => 7, :B => 3}}, 4, {1 => :fastball, 2 => :slider})
+    Pitcher.new("E. Diaz", "A", {:fastball => {:S => 8, :B => 2}, :slider => {:S => 7, :B => 3}}, 4, {1 => :fastball, 2 => :slider})
 ]
 
 yankees_pitchers = [
-    Pitcher.new("G. Cole", 94, {:fastball => {:S => 8, :B => 2}, :slider => {:S => 7, :B => 3}, :curveball => {:S => 5, :B => 5}, 
+    Pitcher.new("G. Cole", "A+", {:fastball => {:S => 8, :B => 2}, :slider => {:S => 7, :B => 3}, :curveball => {:S => 5, :B => 5}, 
     :changeup => {:S => 5, :B => 5}}, 2, {1 => :fastball, 2 => :slider, 3 => :curveball, 4 => :changeup}),
-    Pitcher.new("J. Montgomery", 83, {:fastball => {:S => 6, :B => 4}, :changeup => {:S => 6, :B => 4}, :curveball => {:S => 6, :B => 4}, 
+    Pitcher.new("J. Montgomery", "B", {:fastball => {:S => 6, :B => 4}, :changeup => {:S => 6, :B => 4}, :curveball => {:S => 6, :B => 4}, 
     :sinker => {:S => 4, :B => 6}}, 2, {1 => :fastball, 2 => :changeup, 3 => :curveball, 4 => :sinker}),
-    Pitcher.new("L. Severino", 81, {:fastball => {:S => 6, :B => 4}, :slider => {:S => 5, :B => 5}, :changeup => {:S => 5, :B => 5}},
+    Pitcher.new("L. Severino", "B", {:fastball => {:S => 6, :B => 4}, :slider => {:S => 5, :B => 5}, :changeup => {:S => 5, :B => 5}},
     2, {1 => :fastball, 2 => :slider, 3 => :changeup}),
-    Pitcher.new("J. Loaisiga", 85, {:fastball => {:S => 4, :B => 6}, :sinker => {:S => 8, :B => 2}, :curveball => {:S => 6, :B => 4}, 
+    Pitcher.new("J. Loaisiga", "B+", {:fastball => {:S => 4, :B => 6}, :sinker => {:S => 8, :B => 2}, :curveball => {:S => 6, :B => 4}, 
     :changeup => {:S => 4, :B => 6}}, 4, {1 => :fastball, 2 => :sinker, 3 => :curveball, 4 => :changeup}),
-    Pitcher.new("A. Chapman", 88, {:fastball => {:S => 8, :B => 2}, :slider => {:S => 7, :B => 3}, :sinker => {:S => 3, :B => 7}}, 4, {1 => :fastball, 2 => :slider, 3 => :sinker})
+    Pitcher.new("A. Chapman", "A", {:fastball => {:S => 8, :B => 2}, :slider => {:S => 7, :B => 3}, :sinker => {:S => 3, :B => 7}}, 4, {1 => :fastball, 2 => :slider, 3 => :sinker})
 ]
 
 away_team = Team.new("NYM", mets_hitters, mets_pitchers)

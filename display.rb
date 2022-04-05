@@ -13,7 +13,7 @@ class Display
 
     def move_players(bases, player)
         bases.unshift(player)
-        (bases - 1).times {bases.unshift("empty")}
+        (bases - 1).times {bases.unshift("empty")} if bases > 1
     end
 
     def show_bases_and_score(away_team, home_team, inning_half, inning)
