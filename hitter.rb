@@ -6,7 +6,6 @@ class Hitter
         @name = name
         @position = position
         @tendencies = tendencies 
-        @guessed_tendencies = guessed_tendencies
         @base = 0
         @hits, @at_bats, @homers, @rbis = 0, 0, 0, 0
     end
