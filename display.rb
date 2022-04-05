@@ -43,5 +43,10 @@ class Display
         pitcher.pitch_options.each do |num, pitch|
             puts "#{num}- #{pitch}"
         end
+        puts "Pitch strike %"
+        pitcher.tendencies.each do |pitch, tend|
+            pitch_percentage = tend[:S] / (tend[:S] + tend[:B])
+            puts "#{pitch}-#{pitch_percentage}%"
+        end
     end
 end
