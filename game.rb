@@ -143,6 +143,7 @@ class Game
         end
         first_result = selected_pitch_tendencies.sample 
         result = second_result(pitcher, first_result, zone)
+        update_pitcher_stats(pitcher, result)
         result #:S or :B
     end
 
@@ -154,6 +155,12 @@ class Game
         elsif first_result == :B    
             :B   
         end
+    end
+
+    def update_pitcher_stats(pitcher, result)
+        pitcher.stamina -= pitcher.stamina_interval
+        pitcher.pitches += 1
+        pitcher.strikes += 1 if result == :S   
     end
 
     def corner_pitch_simulator(pitcher)

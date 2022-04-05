@@ -1,6 +1,6 @@
 class Pitcher  
     attr_reader :name, :grade, :tendencies, :pitch_options
-    attr_accessor :stamina
+    attr_accessor :stamina, :pitches, :strikes, :earned_runs
     #pitch_options = { 1 => :fastball, 2 => :curveball}
     def initialize(name, grade, tendencies, stamina_interval, pitch_options)
         @name = name 
