@@ -23,8 +23,7 @@ class Game
     end
 
     def switch_batter
-        last_hitter = @hitting_team.hitters.shift
-        @hitting_team.hitters.push(last_hitter)
+        @hitting_team.hitters.rotate
     end
 
     def score_difference
