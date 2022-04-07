@@ -58,13 +58,13 @@ class Game
 
     def in_play_simulation(hitter)
         if corner_pitch?
-            hash = hitter.tendencies
+            hitter_tendencies = hitter.tendencies
             tendencies = []
-            hash.each do |k,v|
+            hitter_tendencies.each do |base,freq|
                 if k == 0
-                    tendencies += [k] * (v + (v/4))
+                    tendencies += [base] * (freq + (freq/4))
                 else
-                    tendencies += [k] * v
+                    tendencies += [base] * freq
                 end
             end
             result = tendencies.sample
