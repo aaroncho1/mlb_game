@@ -1,14 +1,22 @@
 class Pitcher  
-    attr_reader :name, :tendencies, :pitch_options
+    attr_reader :name, :tendencies, :pitch_options, :stamina_interval
     attr_accessor :stamina, :pitches, :strikes, :earned_runs
     #pitch_options = { 1 => :fastball, 2 => :curveball}
     def initialize(name, grade, tendencies, stamina_interval, pitch_options)
         @name = name 
         @tendencies = tendencies 
         @stamina = 200
+        @stamina_interval
         @earned_runs = 0
         @pitches, @strikes = 0, 0
         @pitch_options = pitch_options #{1 => :fastball, 2 => :curveball, 3 => :slider}
+    end
+
+    def make_him_chase?
+        puts "Make him chase? (y/n)"
+        #add error here
+        choice = gets.chomp.downcase
+        choice
     end
 
     def choose_pitch

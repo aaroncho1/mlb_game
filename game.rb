@@ -104,30 +104,44 @@ class Game
         refresh
         @current_pitch_zone = zone #resets the current pitch with each pitch
         @current_pitch = pitch
-        result = throw_pitch(pitcher, pitch, zone)
-        update_strike_zone(result, zone)
-        result # :S or :B
+        pitch_result = throw_pitch(pitcher, pitch, zone)
+        update_strike_zone(pitch_result, zone)
+        pitch_result # :S or :B
     end
 
     def throw_pitch(pitcher, pitch, zone)
-        selected_pitch_hash = pitcher.tendencies[pitch] #{:fastball => {:S => 8, :B => 2}}
-        selected_pitch_tendencies = []
-        selected_pitch_hash.each do |pitch_type , n|
-            selected_pitch_tendencies += [pitch_type] * n
-        end
-        first_result = selected_pitch_tendencies.sample 
-        result = second_result(pitcher, first_result, zone)
+        intentional_ball_choice = pitcher.make_him_chase?
+        return :B if intentional_ball_choice == "y"
+        first_pitch_result = first_result(pitch)
+        result = second_result(pitcher, first_pitch_result, zone)
         update_pitching_stats(pitcher, result)
         result #:S or :B
     end
 
-    def second_result(pitcher, first_result, zone)
-        if first_result == :S && CORNERS.include?(zone)
+    def first_result(pitch)
+        selected_pitch_frequencies = pitcher.tendencies[pitch] #{:fastball => {:S => 8, :B => 2}}
+        selected_pitch_tendencies = []
+        selected_pitch_frequencies.each do |pitch_type , n|
+            selected_pitch_tendencies += [pitch_type] * n
+        end
+        selected_pitch_tendencies.sample
+    end
+
+    def second_result(pitcher, first_pitch_result, zone)
+        if first_pitch_result == :S && CORNERS.include?(zone)
             corner_pitch_simulator(pitcher)
-        elsif first_result == :S && !CORNERS.include?(zone)
+        elsif first_pitch_result == :S && !CORNERS.include?(zone)
             middle_pitch_simulator(pitcher)
-        elsif first_result == :B    
+        elsif first_pitch_result == :B    
             :B   
+        end
+    end
+
+    def walk_batter?
+        if walk?
+            puts "Walk!"
+            update_bases(1)
+            switch_batter
         end
     end
 
@@ -157,9 +171,9 @@ class Game
         end
     end
 
-    def update_strike_zone(result, zone)
+    def update_strike_zone(pitch_result, zone)
         row, col = zone
-        @strike_zone[row][col] = result
+        @strike_zone[row][col] = pitch_result
     end
 
     def reset_strike_zone
@@ -167,19 +181,19 @@ class Game
     end
 
     def swing(hitter, pitch_result)
-        guessed_zone = hitter.guess_zone? # 0,1,2 or false
-        if guessed_zone
-            guessed_hit_simulation(guessed_zone, hitter, pitch_result)
+        guessed_zone_num = hitter.guess_zone? # 0,1,2 or false
+        if guessed_zone_num
+            guessed_hit_simulation(guessed_zone_num, hitter, pitch_result)
         else
             hit_simulation(hitter, pitch_result)
         end
     end
 
-    def guessed_hit_simulation(guessed_zone, hitter, pitch_result)
+    def guessed_hit_simulation(guessed_zone_num, hitter, pitch_result)
         guessed_pitch_num = hitter.guess_pitch?
         refresh
         if guessed_pitch_num #current_pitch = :fastball
-            if @current_pitcher.pitch_options[guessed_pitch] == @current_pitch && guessed_zone == current_pitch_zone[0] # 1 == 1?
+            if @current_pitcher.pitch_options[guessed_pitch] == @current_pitch && guessed_zone_num == current_pitch_zone[0] # 1 == 1?
                 puts "Pitch zone and pitch type guessed correctly"
                 in_play_guessed_pitch_simulation(hitter)
             else
@@ -194,7 +208,7 @@ class Game
             end
         end
 
-        if guessed_zone == current_pitch_zone[0]
+        if guessed_zone_num == current_pitch_zone[0]
             puts "Pitch zone guessed correctly"
             in_play_guessed_zone_simulation(hitter)
         else 
@@ -210,36 +224,32 @@ class Game
         refresh
     end
 
-    def in_play_guessed_pitch_simulation(hitter)
-        hash = hitter.tendencies #0,1,2,3,4 {0 => 120, 1 => 45, 2 => 11, 3 => 1, 4 => 9} out of 200 AB
+    def in_play_guessed_pitch_simulation(hitter) 
+        hitter_tendencies = hitter.tendencies #0,1,2,3,4 {0 => 120, 1 => 45, 2 => 11, 3 => 1, 4 => 9} out of 200 AB
         guessed_tendencies = []
-        if @current_pitcher.grade == "A+"
-            hash.each {|k, v| k == 0 ? guessed_tendencies += [k] * (v/2) : guessed_tendencies += [k] * v}
-        elsif @current_pitcher.grade == "A"
-            hash.each {|k, v| k == 0 ? guessed_tendencies += [k] * (v/3) : guessed_tendencies += [k] * v}
-        elsif @current_pitcher.grade == "B+"
-            hash.each {|k, v| k == 0 ? guessed_tendencies += [k] * (v/4) : guessed_tendencies += [k] * v}
-        elsif @current_pitcher.grade == "B"
-            hash.each {|k, v| k == 0 ? guessed_tendencies += [k] * (v/5) : guessed_tendencies += [k] * v}
-        else 
-            hash.each {|k, v| k == 0 ? guessed_tendencies += [k] * (v/6) : guessed_tendencies += [k] * v}
+        hitter_tendencies.each do |base, freq| #guaranteed hit
+            guessed_tendencies += [base] * freq unless base == 0
         end
         result = guessed_tendencies.sample
-        if hit?(result)
-            record_hit(result)
-            update_bases(result)
-        else
-            record_out
-        end
+        record_hit(result)
+        update_bases(result)
         switch_batter
         refresh
     end
 
     def in_play_guessed_zone_simulation(hitter)
-        hash = hitter.tendencies #0,1,2,3,4 {0 => 120, 1 => 60, 2 => 11, 3 => 1, 4 => 9} 
+        hitter_tendencies = hitter.tendencies #0,1,2,3,4 {0 => 120, 1 => 60, 2 => 11, 3 => 1, 4 => 9} 
         guessed_tendencies = []
-        hash.each do |k, v|
-            guessed_tendencies += [k] * (v * 2)
+        if @current_pitcher.grade == "A+"
+            hitter_tendencies.each {|base, freq| base == 0 ? guessed_tendencies += [base] * (freq/2) : guessed_tendencies += [base] * freq}
+        elsif @current_pitcher.grade == "A"
+            hitter_tendencies.each {|base, freq| base == 0 ? guessed_tendencies += [base] * (freq/3) : guessed_tendencies += [base] * freq}
+        elsif @current_pitcher.grade == "B+"
+            hitter_tendencies.each {|base, freq| base == 0 ? guessed_tendencies += [base] * (freq/4) : guessed_tendencies += [base] * freq}
+        elsif @current_pitcher.grade == "B"
+            hitter_tendencies.each {|base, freq| base == 0 ? guessed_tendencies += [base] * (freq/5) : guessed_tendencies += [base] * freq}
+        else 
+            hitter_tendencies.each {|base, freq| base == 0 ? guessed_tendencies += [base] * (freq/6) : guessed_tendencies += [base] * freq}
         end
         result = guessed_tendencies.sample
         if hit?(result)
@@ -376,11 +386,7 @@ class Game
             end
         elsif swing_choice == "n" && pitch_result == :B   
             balls += 1 
-            if walk?
-                puts "Walk!"
-                update_bases(1)
-                switch_batter
-            end
+            walk_batter?
         elsif swing_choice == "n" && pitch_result == :S   
             strikes += 1
             if strikeout?
