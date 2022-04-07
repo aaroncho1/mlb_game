@@ -303,9 +303,9 @@ class Game
 
     def record_out
         out_result = [:g, :f].sample
-        if double_play_situation?
+        if double_play_situation?(out_result)
             double_play_simulation
-        elsif sac_fly_situation?
+        elsif sac_fly_situation?(out_result)
             sac_fly_simulation
         else 
             @current_hitter.at_bats += 1
@@ -313,11 +313,11 @@ class Game
         end
     end
 
-    def double_play_situation?
+    def double_play_situation?(out_result)
         out_result == :g && display.bases[0].is_a?(Hitter) && inning_outs < 2
     end
 
-    def sac_fly_situation?
+    def sac_fly_situation?(out_result)
         out_result == :f && display.bases[2].is_a?(Hitter) && inning_outs < 2
     end
 
