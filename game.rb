@@ -423,6 +423,12 @@ class Game
         @inning += 1 if inning_over?
     end
 
+    def switch_sides
+        @inning_half = @inning_half == "Top" ? "Bottom" : "Top"
+        @pitching_team = @pitching_team == home_team ? away_team : home_team
+        @hitting_team = @hitting_team == home_team ? away_team : home_team
+    end
+
     def play
         welcome_message
         enter_to_start
