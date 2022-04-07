@@ -181,11 +181,30 @@ class Game
     end
 
     def swing(hitter, pitch_result)
+        batters_eye_simulation(pitch_result)
         guessed_zone_num = hitter.guess_zone? # 0,1,2 or false
         if guessed_zone_num
             guessed_hit_simulation(guessed_zone_num, hitter, pitch_result)
         else
             hit_simulation(hitter, pitch_result)
+        end
+    end
+
+    def batters_eye_simulation(pitch_result)
+        if @current_pitcher.grade == "A+"
+            see_pitch = [:n, :n, :n, :n, :n, :n, :n, :n, :n, :y].sample
+        elsif @current_pitcher.grade == "A"
+            see_pitch = [:n, :n, :n, :n, :n, :n, :n, :n, :y, :y].sample
+        elsif @current_pitcher.grade == "B+"
+            see_pitch = [:n, :n, :n, :n, :n, :n, :n, :y, :y, :y].sample
+        elsif @current_pitcher.grade == "B"
+            see_pitch = [:n, :n, :n, :n, :n, :n, :y, :y, :y, :y].sample
+        else 
+            see_pitch = [:n, :n, :n, :n, :n, :y, :y, :y, :y, :y].sample
+        end
+        
+        if see_pitch == :y  
+            pitch_result == :S ? puts "Batter eyes strike!" : puts "Batter eyes ball!"
         end
     end
 
