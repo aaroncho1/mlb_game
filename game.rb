@@ -12,13 +12,11 @@ class Game
 
     def initialize(away_team, home_team)
         @away_team, @home_team = away_team, home_team
-        @away_team_hitters, @home_team_hitters = away_team.hitters, home_team.hitters
-        @away_team_pitchers, @home_team_pitchers = away_team.pitchers, home_team.pitchers
         @game_outs, @inning_outs, @balls, @strikes, @inning = 0, 0, 0, 0, 1
         @inning_half = "Top"
         @pitching_team, @hitting_team = home_team, away_team
         @display = Display.new
-        @current_pitcher, @current_hitter, @current_pitch_zone, @current_pitch = pitching_team.pitchers[0] , hitting_team.players[0], nil, nil
+        @current_pitcher, @current_hitter, @current_pitch_zone, @current_pitch = pitching_team.pitchers[0] , hitting_team.hitters[0], nil, nil
         @strike_zone = Array.new(3){Array.new(3, "_")}
     end
 
@@ -204,7 +202,11 @@ class Game
         end
         
         if see_pitch == :y  
-            pitch_result == :S ? puts "Batter eyes strike!" : puts "Batter eyes ball!"
+            if pitch_result == :S 
+                puts "Batter eyes strike!" 
+            else 
+                puts "Batter eyes ball!"
+            end
         end
     end
 
