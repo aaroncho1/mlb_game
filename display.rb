@@ -5,7 +5,7 @@ class Display
     attr_accessor :bases
 
     def initialize
-        @bases = []
+        @bases = ["empty", "empty", "empty"]
     end
 
     def show_pitch_options
@@ -49,15 +49,17 @@ class Display
             puts "#{" ".ljust(PITCH_BOX_WIDTH)} #{row.join(" ")}"
         end
         puts ""
-        puts "At bat: #{hitter.name} (#{hitter.hits}-#{hitter.at_bats},#{hitter.homers} HR #{hitter.rbis} RBI"
+        puts "At bat: #{hitter.name} (#{hitter.hits}-#{hitter.at_bats},#{hitter.homers} HR #{hitter.rbis} RBI)"
         puts "Pitching: #{pitcher.name} (#{pitcher.pitches} P, #{pitcher.earned_runs} ER)"
+        puts ""
         puts "Select Pitch:"
         pitcher.pitch_options.each do |num, pitch|
             puts "#{num}- #{pitch}"
         end
+        puts ""
         puts "Pitch strike %"
         pitcher.tendencies.each do |pitch, tend|
-            pitch_percentage = tend[:S] / (tend[:S] + tend[:B])
+            pitch_percentage = tend[:S] * 10
             puts "#{pitch}-#{pitch_percentage}%"
         end
     end

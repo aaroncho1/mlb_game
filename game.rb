@@ -2,7 +2,7 @@ require_relative 'hitter'
 require_relative 'pitcher'
 require_relative 'team'
 require_relative 'display'
-require 'byebug'
+# require 'byebug'
 
 class Game
     CORNERS = [[0,0], [0,2], [2,0] [2,2]]
@@ -53,6 +53,19 @@ class Game
 
     def corner_pitch?
         CORNERS.include?(current_pitch_zone)
+    end
+
+    def play
+        # debugger
+        welcome_message
+        enter_to_start
+        until game_won? #outs == 27
+            play_half_inning
+            if half_inning_over?
+                switch_sides
+                reset_inning
+            end
+        end
     end
 
     def in_play_simulation(hitter)
@@ -118,7 +131,7 @@ class Game
     end
 
     def first_result(pitch)
-        selected_pitch_frequencies = pitcher.tendencies[pitch] #{:fastball => {:S => 8, :B => 2}}
+        selected_pitch_frequencies = @current_pitcher.tendencies[pitch] #{:fastball => {:S => 8, :B => 2}}
         selected_pitch_tendencies = []
         selected_pitch_frequencies.each do |pitch_type , n|
             selected_pitch_tendencies += [pitch_type] * n
@@ -180,6 +193,13 @@ class Game
     end
 
     def swing(hitter, pitch_result)
+        puts ""
+        puts "Batter's turn"
+        sleep 1.25
+        system("clear")
+        sleep 0.25
+        refresh
+        try_for_homerun?
         batters_eye_simulation(pitch_result)
         guessed_zone_num = hitter.guess_zone? # 0,1,2 or false
         if guessed_zone_num
@@ -188,6 +208,17 @@ class Game
             hit_simulation(hitter, pitch_result)
         end
     end
+
+    def try_for_homerun?
+        swing_for_hr = @current_hitter.swing_for_the_fences?(@current_pitch_zone)
+        if swing_for_hr
+            if swing_for_hr == @current_pitch_zone
+                puts "Homerun!"
+            else
+                return
+            end
+        end
+    end 
 
     def batters_eye_simulation(pitch_result)
         if @current_pitcher.grade == "A+"
@@ -215,7 +246,7 @@ class Game
         guessed_pitch_num = hitter.guess_pitch?
         refresh
         if guessed_pitch_num #current_pitch = :fastball
-            if @current_pitcher.pitch_options[guessed_pitch] == @current_pitch && guessed_zone_num == current_pitch_zone[0] # 1 == 1?
+            if @current_pitcher.pitch_options[guessed_pitch_num] == @current_pitch && guessed_zone_num == current_pitch_zone[0] # 1 == 1?
                 puts "Pitch zone and pitch type guessed correctly"
                 in_play_guessed_pitch_simulation(hitter)
             else
@@ -449,19 +480,6 @@ class Game
         @inning_half = @inning_half == "Top" ? "Bottom" : "Top"
         @pitching_team = @pitching_team == home_team ? away_team : home_team
         @hitting_team = @hitting_team == home_team ? away_team : home_team
-    end
-
-    def play
-        debugger
-        welcome_message
-        enter_to_start
-        until game_won? #outs == 27
-            play_half_inning
-            if half_inning_over?
-                switch_sides
-                reset_inning
-            end
-        end
     end
 end
 

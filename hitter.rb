@@ -1,7 +1,7 @@
 class Hitter
 
-    attr_reader :position, :tendencies, :speed
-    attr_accessor :hits, :at_bats, :homers, :rbis
+    attr_reader :name, :position, :tendencies, :speed, :name
+    attr_accessor :hits, :at_bats, :homers, :rbis, :walks
     def initialize(name, position, tendencies, speed)
         @name = name
         @position = position
@@ -9,7 +9,22 @@ class Hitter
         @hits, @at_bats, @homers, @rbis, @walks = 0, 0, 0, 0
     end
 
+    def swing_for_the_fences?(pitch_zone)
+        puts ""
+        puts "Hitting player, swing for the fences? (y/n)"
+        choice = gets.chomp.downcase 
+        if choice == "y"
+            puts "Guess exact pitch zone in format _ _:"
+            guessed_pitch_zone = gets.chomp.split(" ")
+            hitters_guess = guessed_pitch_zone.map(& :to_i)
+        else
+            hitters_guess = false
+        end
+        hitters_guess
+    end
+
     def guess_zone?
+        puts ""
         puts "Hitting player, guess pitch zone? (y/n):"
         guess = gets.chomp.downcase
         if guess == "y"
