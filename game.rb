@@ -69,9 +69,9 @@ class Game
     end
 
     def in_play_simulation(hitter)
+        hitter_tendencies = hitter.tendencies
+        tendencies = []
         if corner_pitch?
-            hitter_tendencies = hitter.tendencies
-            tendencies = []
             hitter_tendencies.each do |base,freq|
                 if k == 0
                     tendencies += [base] * (freq + (freq/4))
@@ -79,9 +79,12 @@ class Game
                     tendencies += [base] * freq
                 end
             end
-            result = tendencies.sample
+            result = tendencies.flatten.sample
         else
-            result = hitter.tendencies.sample
+            hitter_tendencies.each do |base, freq|
+                tendencies += [base] * freq
+            end
+            result = tendencies.flatten.sample
         end
 
         if hit?(result)
@@ -228,15 +231,14 @@ class Game
         tendencies = @current_hitter.tendencies
         homer_tendencies = tendencies.select{|k,v| [0,4].include?(k)}
         arr = []
-        homer_tendencies.each do |k,v|
-            if k == 0
-                arr << [k] * (v/10)
+        homer_tendencies.each do |base,freq|
+            if base == 0
+                arr << [base] * (freq/10)
             else  
-                arr << [k] * (v * 3)
+                arr << [base] * (freq * 3)
             end
         end
-        flattened = arr.flatten
-        result = flattened.sample
+        result = arr.flatten.sample
         if hit?(result)
             record_hit(result)
             update_bases(result)
