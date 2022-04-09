@@ -16,11 +16,11 @@ class Hitter
         if choice == "y"
             puts "Guess exact pitch zone in format _ _:"
             guessed_pitch_zone = gets.chomp.split(" ")
-            hitters_guess = guessed_pitch_zone.map(& :to_i)
+            hitters_guessed_zone = guessed_pitch_zone.map(& :to_i)
         else
-            hitters_guess = false
+            hitters_guessed_zone = false
         end
-        hitters_guess
+        hitters_guessed_zone
     end
 
     def guess_zone?

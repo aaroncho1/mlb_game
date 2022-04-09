@@ -2,7 +2,7 @@ require_relative 'hitter'
 require_relative 'pitcher'
 require_relative 'team'
 require_relative 'display'
-require 'byebug'
+# require 'byebug'
 
 class Game
     CORNERS = [[0,0], [0,2], [2,0] [2,2]]
@@ -56,7 +56,7 @@ class Game
     end
 
     def play
-        debugger
+        # debugger
         welcome_message
         enter_to_start
         until game_won? #outs == 27
@@ -113,7 +113,6 @@ class Game
     def pitch(pitcher)
         pitch = pitcher.choose_pitch #:fastball
         zone = pitcher.choose_zone #[2,0]
-        refresh
         @current_pitch_zone = zone #resets the current pitch with each pitch
         @current_pitch = pitch
         pitch_result = throw_pitch(pitcher, pitch, zone)
@@ -193,19 +192,21 @@ class Game
     end
 
     def swing(hitter, pitch_result)
-        puts ""
+        system("clear")
         puts "Batter's turn"
         sleep 1.25
         system("clear")
         sleep 0.25
         refresh
         try_for_homerun?
-        batters_eye_simulation(pitch_result)
-        guessed_zone_num = hitter.guess_zone? # 0,1,2 or false
-        if guessed_zone_num
-            guessed_hit_simulation(guessed_zone_num, hitter, pitch_result)
-        else
-            hit_simulation(hitter, pitch_result)
+        unless try_for_homerun?
+            batters_eye_simulation(pitch_result)
+            guessed_zone_num = hitter.guess_zone? # 0,1,2 or false
+            if guessed_zone_num
+                guessed_hit_simulation(guessed_zone_num, hitter, pitch_result)
+            else
+                hit_simulation(hitter, pitch_result)
+            end
         end
     end
 
@@ -213,12 +214,37 @@ class Game
         swing_for_hr = @current_hitter.swing_for_the_fences?(@current_pitch_zone)
         if swing_for_hr
             if swing_for_hr == @current_pitch_zone
-                puts "Homerun!"
+                puts "Pitch zone guessed correctly!"
+                home_run_simulation
             else
-                return
+                record_out
             end
+            switch_batter
+            refresh
         end
     end 
+
+    def home_run_simulation
+        tendencies = @current_hitter.tendencies
+        homer_tendencies = tendencies.select{|k,v| [0,4].include?(k)}
+        arr = []
+        homer_tendencies.each do |k,v|
+            if k == 0
+                arr << [k] * (v/10)
+            else  
+                arr << [k] * (v * 3)
+            end
+        end
+        flattened = arr.flatten
+        result = flattened.sample
+        if hit?(result)
+            record_hit(result)
+            update_bases(result)
+        else
+            record_out
+        end
+    end
+
 
     def batters_eye_simulation(pitch_result)
         if @current_pitcher.grade == "A+"
