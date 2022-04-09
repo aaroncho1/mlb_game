@@ -2,10 +2,12 @@ class Display
 
     BASE_LINE_WIDTH = 22
     PITCH_BOX_WIDTH = 11
+    attr_reader :plays
     attr_accessor :bases
 
     def initialize
         @bases = ["empty", "empty", "empty"]
+        plays = []
     end
 
     def show_pitch_options
