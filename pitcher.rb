@@ -7,7 +7,7 @@ class Pitcher
         @grade = grade
         @tendencies = tendencies 
         @stamina = 200
-        @stamina_interval
+        @stamina_interval = stamina_interval
         @earned_runs = 0
         @pitches, @strikes = 0, 0
         @pitch_options = pitch_options #{1 => :fastball, 2 => :curveball, 3 => :slider}

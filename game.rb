@@ -388,7 +388,7 @@ class Game
             puts "#{current_hitter.name} flied out" if out_result == :f  
             puts "#{current_hitter.name} grounded out" if out_result == :g 
             @current_hitter.at_bats += 1
-            inning_outs += 1
+            @inning_outs += 1
         end
     end
 
