@@ -90,10 +90,8 @@ class Game
         if hit?(result)
             record_hit(result)
             update_bases(result)
-            switch_batter
         else
             record_out
-            switch_batter
         end
         switch_batter
     end
@@ -360,7 +358,6 @@ class Game
     end
 
     def update_bases(result)
-        display.bases << current_hitter
         display.move_players(result, current_hitter)
         update_hitter_stats(result)
         score_runs if display.bases.length > 3
@@ -388,6 +385,8 @@ class Game
         elsif sac_fly_situation?(out_result)
             sac_fly_simulation
         else 
+            puts "#{current_hitter.name} flied out" if out_result == :f  
+            puts "#{current_hitter.name} grounded out" if out_result == :g 
             @current_hitter.at_bats += 1
             inning_outs += 1
         end

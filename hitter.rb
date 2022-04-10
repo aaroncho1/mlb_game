@@ -6,7 +6,7 @@ class Hitter
         @name = name
         @position = position
         @tendencies = tendencies 
-        @hits, @at_bats, @homers, @rbis, @walks = 0, 0, 0, 0
+        @hits, @at_bats, @homers, @rbis, @walks = 0, 0, 0, 0, 0
     end
 
     def swing_for_the_fences?(pitch_zone)
