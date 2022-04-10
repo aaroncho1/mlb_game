@@ -22,7 +22,8 @@ class Game
     end
 
     def switch_batter
-        @hitting_team.hitters.rotate
+        @hitting_team.hitters.rotate!
+        @current_hitter = @hitting_team.hitters.first
     end
 
     def score_difference
