@@ -13,9 +13,9 @@ class Display
     def show_pitch_options
     end
 
-    def move_players(bases, player)
+    def move_players(result, player)
         bases.unshift(player)
-        (bases - 1).times {bases.unshift("empty")} if bases > 1
+        (result - 1).times {bases.unshift("empty")} if result > 1
     end
 
     def show_bases_and_score(away_team, home_team, inning_half, inning)

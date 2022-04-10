@@ -2,7 +2,7 @@ require_relative 'hitter'
 require_relative 'pitcher'
 require_relative 'team'
 require_relative 'display'
-# require 'byebug'
+require 'byebug'
 
 class Game
     CORNERS = [[0,0], [0,2], [2,0] [2,2]]
@@ -56,7 +56,7 @@ class Game
     end
 
     def play
-        # debugger
+        debugger
         welcome_message
         enter_to_start
         until game_won? #outs == 27
@@ -119,7 +119,6 @@ class Game
         @current_pitch_zone = zone #resets the current pitch with each pitch
         @current_pitch = pitch
         pitch_result = throw_pitch(pitcher, pitch, zone)
-        update_strike_zone(pitch_result, zone)
         pitch_result # :S or :B
     end
 
