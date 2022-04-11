@@ -26,7 +26,7 @@ class Pitcher
         puts "Pitching player, select your pitch with the corresponding number:"
         begin
             pitch = gets.chomp.to_i
-            raise "Invalid pitch number" if !pitch_options.has_key?(pitch)
+            raise "Invalid pitch number. Try again:" if !pitch_options.has_key?(pitch)
         rescue => e   
             puts e.message
             retry 
@@ -38,13 +38,28 @@ class Pitcher
     def choose_zone
         puts ""
         puts "Pitching player, select your pitch zone with the numbers in the form _ _"
-        #add error here
         puts "00 01 02"
         puts "10 11 12"
         puts "20 21 22"
-        chosen_zone = gets.chomp
-        pos = chosen_zone.split(" ").map(& :to_i)
+        begin
+            alphabet = ("a".."z").to_a
+            chosen_zone = gets.chomp
+            chosen_zone.each do |el|
+                raise "Please use only numbers. Try again:" if alphabet.include?(el.downcase)
+            end
+            raise "Please use the format # # to chose your zone. Try again:" if chosen_zone.length != 3 
+            pos = chosen_zone.split(" ").map(& :to_i)
+            raise "Invalid pitch zone. Try again:" if !valid_pitch_zone?(pos)
+        rescue => e   
+            puts e.message
+            retry
+        end
         pos
     end
 
+    def valid_pitch_zone?(zone)
+        zone.each do |num|
+            num.between?(0,2)
+        end
+    end
 end
