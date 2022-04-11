@@ -494,8 +494,14 @@ class Game
     end
 
     def enter_to_start
-        selected_key = gets.chomp
-        system("clear") if selected_key == "s"
+        begin
+            selected_key = gets.chomp
+            system("clear") if selected_key == "s"
+            raise "press 's' to start game" if selected_key != "s"
+        rescue => e  
+            puts e.message
+            retry
+        end
     end
 
     def reset_inning
