@@ -2,14 +2,14 @@ require_relative 'hitter'
 require_relative 'pitcher'
 require_relative 'team'
 require_relative 'display'
-require 'byebug'
+# require 'byebug'
 
 class Game
     CORNERS = [[0,0], [0,2], [2,0] [2,2]]
-    SWING_ON_STRIKE_OPTOINS = [:s, :s, :f, :f, :h, :h, :h, :h]
+    SWING_ON_STRIKE_OPTIONS = [:s, :s, :f, :f, :h, :h, :h, :h]
     attr_reader :display, :away_team, :home_team
-    attr_accessor :game_outs, :inning_outs, :inning, :current_pitcher, :inning_half, :pitching_team,
-    :hitting_team, :current_hitter, :current_pitch_zone, :strike_zone, :balls, :strikes
+    attr_accessor :current_pitcher, :inning_half, :pitching_team,
+    :hitting_team, :current_hitter, :current_pitch_zone, :strike_zone
 
     def initialize(away_team, home_team)
         @away_team, @home_team = away_team, home_team
@@ -22,6 +22,8 @@ class Game
     end
 
     def switch_batter
+        @balls = 0
+        @strikes = 0
         @hitting_team.hitters.rotate!
         @current_hitter = @hitting_team.hitters.first
     end
@@ -36,7 +38,7 @@ class Game
 
     def game_won?
         play_extra_innings if extra_innings?
-        game_outs == 27 && score_difference != 0
+        @game_outs == 27 && score_difference != 0
     end
 
     def half_inning_over?
@@ -48,8 +50,8 @@ class Game
     end
 
     def add_out
-        game_outs += 1
-        inning_outs += 1
+        @game_outs += 1
+        @inning_outs += 1
     end
 
     def corner_pitch?
@@ -57,7 +59,7 @@ class Game
     end
 
     def play
-        debugger
+        # debugger
         welcome_message
         enter_to_start
         until game_won? #outs == 27
@@ -98,12 +100,11 @@ class Game
     end
 
     def strikeout?
-        strikes == 3
+        @strikes == 3
     end
 
     def play_half_inning
-        display.render(current_pitcher, current_hitter, away_team, home_team, 
-        inning, inning_half, inning_outs, balls, strikes, @strike_zone)
+        refresh
         current_batter_pitcher_simulation   
     end
 
@@ -126,7 +127,7 @@ class Game
         return :B if intentional_ball_choice == "y"
         first_pitch_result = first_result(pitch)
         result = second_result(pitcher, first_pitch_result, zone)
-        update_pitching_stats(pitcher, result)
+        @current_pitcher.update_pitching_stats(result)
         result #:S or :B
     end
 
@@ -152,15 +153,10 @@ class Game
     def walk_batter?
         if walk?
             puts "Walk!"
+            sleep 1.25
             update_bases(1)
             switch_batter
         end
-    end
-
-    def update_pitching_stats(pitcher, result)
-        pitcher.stamina -= pitcher.stamina_interval
-        pitcher.pitches += 1
-        pitcher.strikes += 1 if result == :S   
     end
 
     def corner_pitch_simulator(pitcher)
@@ -200,7 +196,7 @@ class Game
         sleep 0.25
         refresh 
         go_for_hr = try_for_homerun?
-        if go_for_hr == false
+        unless go_for_hr
             batters_eye_simulation(pitch_result)
             guessed_zone_num = hitter.guess_zone? # 0,1,2 or false
             if guessed_zone_num
@@ -216,6 +212,7 @@ class Game
         if swing_for_hr
             if swing_for_hr == @current_pitch_zone
                 puts "Pitch zone guessed correctly!"
+                sleep 1.25
                 home_run_simulation
             else
                 record_out
@@ -264,8 +261,10 @@ class Game
         if see_pitch == :y  
             if pitch_result == :S 
                 puts "Batter eyes strike!" 
+                sleep 1.25
             else 
                 puts "Batter eyes ball!"
+                sleep 1.25
             end
         end
     end
@@ -276,30 +275,36 @@ class Game
         if guessed_pitch_num #current_pitch = :fastball
             if @current_pitcher.pitch_options[guessed_pitch_num] == @current_pitch && guessed_zone_num == current_pitch_zone[0] # 1 == 1?
                 puts "Pitch zone and pitch type guessed correctly"
+                sleep 1.25
                 in_play_guessed_pitch_simulation(hitter)
             else
-                strikes += 1
+                @strikes += 1
                 if strikeout?
                     puts "Strikeout!"
+                    sleep 1.25
                     add_out
                     switch_batter
                 else
                     puts "Strike swinging"
+                    sleep 1.25
                 end
             end
         end
 
         if guessed_zone_num == current_pitch_zone[0]
             puts "Pitch zone guessed correctly"
+            sleep 1.25
             in_play_guessed_zone_simulation(hitter)
         else 
-            strikes += 1
+            @strikes += 1
             if strikeout?
                 puts "Strikeout!"
+                sleep 1.25
                 add_out
                 switch_batter
             else
                 puts "Strike swinging"
+                sleep 1.25
             end
         end
         refresh
@@ -358,18 +363,13 @@ class Game
         when 4
             puts "HOME RUN!"
         end
+        sleep 1.25
     end
 
     def update_bases(result)
         display.move_players(result, current_hitter)
-        update_hitter_stats(result)
+        @current_hitter.update_hitter_stats(result)
         score_runs if display.bases.length > 3
-    end
-
-    def update_hitter_stats(result)
-        @current_hitter.hits += 1
-        @current_hitter.homers += 1 if result == 4
-        @current_hitter.at_bats += 1
     end
 
     def score_runs
@@ -393,22 +393,23 @@ class Game
             @current_hitter.at_bats += 1
             @inning_outs += 1
         end
+        sleep 1.25
     end
 
     def double_play_situation?(out_result)
-        out_result == :g && display.bases[0].is_a?(Hitter) && inning_outs < 2
+        out_result == :g && display.bases[0].is_a?(Hitter) && @inning_outs < 2
     end
 
     def sac_fly_situation?(out_result)
-        out_result == :f && display.bases[2].is_a?(Hitter) && inning_outs < 2
+        out_result == :f && display.bases[2].is_a?(Hitter) && @inning_outs < 2
     end
 
     def double_play_simulation
         if display.bases[0].speed == "A"
-            inning_outs += 1
+            @inning_outs += 1
             display.bases << "empty"
         else
-            inning_outs += 2
+            @inning_outs += 2
             display.bases[0] = "empty"
         end
         @current_hitter.at_bats += 1
@@ -433,16 +434,17 @@ class Game
                 @inning_outs += 2
             end
         end
+        sleep 1.25
     end
 
     def walk?
-        balls == 4
+        @balls == 4
     end
 
     def hit_simulation(hitter, pitch_result)
         swing_choice = hitter.swing?
         if swing_choice == "y" && pitch_result == :B  
-            strikes += 1
+            @strikes += 1
             if strikeout?
                 puts "Strikeout!"
                 add_out
@@ -455,10 +457,10 @@ class Game
             if result == :h  
                 in_play_simulation(hitter)
             elsif result == :f  
-                strikes += 1 unless strikes == 2
+                @strikes += 1 unless @strikes == 2
                 puts "foul"
             elsif result == :s
-                strikes += 1  
+                @strikes += 1  
                 if strikeout?
                     puts "Strikeout!"
                     switch_batter
@@ -467,10 +469,10 @@ class Game
                 end
             end
         elsif swing_choice == "n" && pitch_result == :B   
-            balls += 1 
+            @balls += 1 
             walk_batter?
         elsif swing_choice == "n" && pitch_result == :S   
-            strikes += 1
+            @strikes += 1
             if strikeout?
                 puts "Strikeout!"
                 add_out
@@ -479,13 +481,14 @@ class Game
                 puts "Strike looking"
             end
         end
+        sleep 1.25
         refresh
     end
 
     def refresh
         system("clear")
         display.render(current_pitcher, current_hitter, away_team, home_team, 
-        inning, inning_half, inning_outs, balls, strikes, @strike_zone)
+        @inning, inning_half, @inning_outs, @balls, @strikes, @strike_zone)
     end
 
     def welcome_message

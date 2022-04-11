@@ -2,11 +2,18 @@ class Hitter
 
     attr_reader :name, :position, :tendencies, :speed, :name
     attr_accessor :hits, :at_bats, :homers, :rbis, :walks
+
     def initialize(name, position, tendencies, speed)
         @name = name
         @position = position
         @tendencies = tendencies 
         @hits, @at_bats, @homers, @rbis, @walks = 0, 0, 0, 0, 0
+    end
+
+    def update_hitter_stats(result)
+        @hits += 1
+        @homers += 1 if result == 4
+        @at_bats += 1
     end
 
     def swing_for_the_fences?(pitch_zone)
