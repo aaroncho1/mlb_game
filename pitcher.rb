@@ -24,8 +24,13 @@ class Pitcher
     def choose_pitch
         puts ""
         puts "Pitching player, select your pitch with the corresponding number:"
-        #add error here
-        pitch = gets.chomp.to_i
+        begin
+            pitch = gets.chomp.to_i
+            raise "Invalid pitch number" if !pitch_options.has_key?(pitch)
+        rescue => e   
+            puts e.message
+            retry 
+        end
         chosen_pitch = pitch_options[pitch]
         chosen_pitch #:fastball
     end
