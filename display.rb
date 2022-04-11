@@ -42,17 +42,22 @@ class Display
         end
     end 
 
-    def render(pitcher, hitter, away_team, home_team, inning, 
-        inning_half, inning_outs, balls, strikes, strike_zone)
+    def render(pitcher, hitter, away_team, home_team, inning, inning_half, 
+        inning_outs, balls, strikes, strike_zone, current_pitch, reveal_pitch)
         show_bases_and_score(away_team, home_team, inning_half, inning)
         puts "#{balls}-#{strikes}, #{inning_outs} outs"
         puts ""
+        if reveal_pitch
+            puts "#{"".ljust(PITCH_BOX_WIDTH)} Last pitch: #{current_pitch}"
+        else
+            puts "#{"".ljust(PITCH_BOX_WIDTH)} Last pitch:"
+        end
         strike_zone.each do |row|
             puts "#{" ".ljust(PITCH_BOX_WIDTH)} #{row.join(" ")}"
         end
         puts ""
         puts "At bat: #{hitter.name} (#{hitter.hits}-#{hitter.at_bats},#{hitter.homers} HR #{hitter.rbis} RBI)"
-        puts "Pitching: #{pitcher.name} (#{pitcher.pitches} P, #{pitcher.earned_runs} ER)"
+        puts "Pitching: #{pitcher.name} (#{pitcher.pitches} P, #{pitcher.earned_runs} ER, Stamina: #{pitcher.stamina / 2})"
         puts ""
         puts "Select Pitch:"
         pitcher.pitch_options.each do |num, pitch|

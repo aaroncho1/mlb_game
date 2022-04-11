@@ -19,6 +19,7 @@ class Game
         @display = Display.new
         @current_pitcher, @current_hitter, @current_pitch_zone, @current_pitch = pitching_team.pitchers[0] , hitting_team.hitters[0], nil, nil
         @strike_zone = Array.new(3){Array.new(3, "_")}
+        @reveal_pitch = false
     end
 
     def switch_batter
@@ -111,6 +112,7 @@ class Game
     def current_batter_pitcher_simulation
         pitch_result = pitch(current_pitcher) #:S or :B
         swing(current_hitter, pitch_result)
+        update_strike_zone(pitch_result, @current_pitch_zone)
     end
 
     def pitch(pitcher)
@@ -170,9 +172,9 @@ class Game
     end
 
     def middle_pitch_simulator(pitcher)
-        if pitcher.stamina >= 200
+        if pitcher.stamina >= 100
             [:S, :S, :S, :S, :S, :S, :S, :S, :S, :B].sample
-        elsif pitcher.stamina >= 100
+        elsif pitcher.stamina >= 50
             [:S, :S, :S, :S, :S, :S, :S, :B, :B, :B].sample
         else
             [:S, :S, :S, :S, :S, :S, :B, :B, :B, :B].sample
@@ -180,6 +182,7 @@ class Game
     end
 
     def update_strike_zone(pitch_result, zone)
+        @reveal_pitch = true
         row, col = zone
         @strike_zone[row][col] = pitch_result
     end
@@ -261,11 +264,10 @@ class Game
         if see_pitch == :y  
             if pitch_result == :S 
                 puts "Batter eyes strike!" 
-                sleep 1.25
             else 
                 puts "Batter eyes ball!"
-                sleep 1.25
             end
+            sleep 1.25
         end
     end
 
@@ -447,10 +449,12 @@ class Game
             @strikes += 1
             if strikeout?
                 puts "Strikeout!"
+                sleep 1.25
                 add_out
                 switch_batter
             else
                 puts "Strike swinging"
+                sleep 1.25
             end
         elsif swing_choice == "y" && pitch_result == :S 
             result = SWING_ON_STRIKE_OPTIONS.sample
@@ -459,36 +463,42 @@ class Game
             elsif result == :f  
                 @strikes += 1 unless @strikes == 2
                 puts "foul"
+                sleep 1.25
             elsif result == :s
                 @strikes += 1  
                 if strikeout?
                     puts "Strikeout!"
+                    sleep 1.25
                     switch_batter
                 else
                     puts "Strike swinging"
+                    sleep 1.25
                 end
             end
-        elsif swing_choice == "n" && pitch_result == :B   
+        elsif swing_choice == "n" && pitch_result == :B  
+            puts "Ball"
+            sleep 1.25 
             @balls += 1 
             walk_batter?
         elsif swing_choice == "n" && pitch_result == :S   
             @strikes += 1
             if strikeout?
                 puts "Strikeout!"
+                sleep 1.25
                 add_out
                 switch_batter
             else
                 puts "Strike looking"
+                sleep 1.25
             end
         end
-        sleep 1.25
         refresh
     end
 
     def refresh
         system("clear")
-        display.render(current_pitcher, current_hitter, away_team, home_team, 
-        @inning, inning_half, @inning_outs, @balls, @strikes, @strike_zone)
+        display.render(current_pitcher, current_hitter, away_team, home_team, @inning, 
+        inning_half, @inning_outs, @balls, @strikes, @strike_zone, @current_pitch, @reveal_pitch)
     end
 
     def welcome_message
