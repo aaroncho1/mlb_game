@@ -44,7 +44,7 @@ class Pitcher
         begin
             alphabet = ("a".."z").to_a
             chosen_zone = gets.chomp
-            chosen_zone.each do |el|
+            chosen_zone.each_char do |el|
                 raise "Please use only numbers. Try again:" if alphabet.include?(el.downcase)
             end
             raise "Please use the format # # to chose your zone. Try again:" if chosen_zone.length != 3 

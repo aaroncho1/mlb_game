@@ -15,8 +15,21 @@ class Hitter
         choice = gets.chomp.downcase 
         if choice == "y"
             puts "Guess exact pitch zone in format _ _:"
-            guessed_pitch_zone = gets.chomp.split(" ")
-            hitters_guessed_zone = guessed_pitch_zone.map(& :to_i)
+            alphabet = ("a".."z").to_a
+            begin
+                guessed_pitch_zone = gets.chomp
+                guessed_pitch_zone.each_char do |el|
+                    raise "Please use only numbers. Try again:" if alphabet.include?(el.downcase)
+                end
+                raise "Please use the format # # to choose zone. Try again:" if guessed_pitch_zone.length != 3
+                hitters_guessed_zone = guessed_pitch_zone.split(" ").map(& :to_i)
+                hitters_guessed_zone.each do |num|
+                    raise "Invalid zone. Try again:" if !num.between?(0,2)
+                end
+            rescue => e    
+                puts e.message  
+                retry
+            end
         else
             hitters_guessed_zone = false
         end
