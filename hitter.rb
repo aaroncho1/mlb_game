@@ -36,13 +36,25 @@ class Hitter
         hitters_guessed_zone
     end
 
-    def guess_zone?
+    def guess_zone? 
         puts ""
         puts "Hitting player, guess pitch zone? (y/n):"
         guess = gets.chomp.downcase
         if guess == "y"
             puts "Select 0- top, 1- middle, 2- down:"
-            guessed_zone = gets.chomp.to_i
+            begin
+                alphabet = ("a".."z").to_a
+                guessed = gets.chomp.downcase
+                guessed.each_char do |el|
+                    raise "Please select a number. Try again:" if alphabet.include?(el)
+                end
+                raise "Invalid length. Try again:" if guessed.length > 1
+                guessed_zone =  guessed.to_i
+                raise "Invalid number. Try again:" if !guessed_zone.between?(0,2)
+            rescue => e  
+                puts e.message
+                retry
+            end
         else
             guessed_zone = false
         end

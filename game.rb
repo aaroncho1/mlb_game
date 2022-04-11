@@ -198,9 +198,9 @@ class Game
         sleep 1.25
         system("clear")
         sleep 0.25
-        refresh
-        try_for_homerun?
-        unless try_for_homerun?
+        refresh 
+        go_for_hr = try_for_homerun?
+        if go_for_hr == false
             batters_eye_simulation(pitch_result)
             guessed_zone_num = hitter.guess_zone? # 0,1,2 or false
             if guessed_zone_num
@@ -222,6 +222,8 @@ class Game
             end
             switch_batter
             refresh
+        else 
+            return false
         end
     end 
 
