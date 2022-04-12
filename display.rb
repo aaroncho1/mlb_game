@@ -50,7 +50,6 @@ class Display
 
     def show_strike_zone(current_pitch, strike_zone)
         puts ""
-        puts "#{"".ljust(PITCH_BOX_WIDTH)} Last pitch: #{current_pitch}"
         strike_zone.each do |row|
             puts "#{" ".ljust(PITCH_BOX_WIDTH)} #{row.join(" ")}"
         end

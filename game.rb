@@ -290,7 +290,7 @@ class Game
                 else
                     puts "Strike swinging"
                     sleep 1.25
-                    display.pitch_sequence << "Strike swinging"
+                    display.pitch_sequence << "Strike swinging- #{@current_pitch}"
                 end
             end
         end
@@ -310,7 +310,7 @@ class Game
             else
                 puts "Strike swinging"
                 sleep 1.25
-                display.pitch_sequence << "Strike swinging"
+                display.pitch_sequence << "Strike swinging- #{@current_pitch}"
             end
         end
         refresh
@@ -477,7 +477,7 @@ class Game
             else
                 puts "Strike swinging"
                 sleep 1.25
-                display.pitch_sequence << "Strike swinging"
+                display.pitch_sequence << "Strike swinging- #{@current_pitch}"
             end
         elsif swing_choice == "y" && pitch_result == :S 
             result = SWING_ON_STRIKE_OPTIONS.sample
@@ -487,7 +487,7 @@ class Game
                 @strikes += 1 unless @strikes == 2
                 puts "foul"
                 sleep 1.25
-                display.pitch_sequence << "Foul"
+                display.pitch_sequence << "Foul- #{@current_pitch}"
             elsif result == :s
                 @strikes += 1  
                 if strikeout?
@@ -506,7 +506,7 @@ class Game
             @balls += 1 
             puts "Ball"
             sleep 1.25 
-            display.pitch_sequence << "Ball"
+            display.pitch_sequence << "Ball- #{@current_pitch}"
             walk_batter?
         elsif swing_choice == "n" && pitch_result == :S   
             @strikes += 1
@@ -519,7 +519,7 @@ class Game
             else
                 puts "Strike looking"
                 sleep 1.25
-                display.pitch_sequence << "Strike looking"
+                display.pitch_sequence << "Strike looking- #{@current_pitch}"
             end
         end
         refresh
