@@ -155,6 +155,7 @@ class Game
         if walk?
             puts "Walk!"
             sleep 1.25
+            display.plays << "#{@current_hitter.name} walked" 
             update_bases(1)
             switch_batter
         end
@@ -283,10 +284,12 @@ class Game
                     puts "Strikeout!"
                     sleep 1.25
                     add_out
+                    display.plays << "#{@current_hitter.name} struck out swinging #{@inning_outs}"
                     switch_batter
                 else
                     puts "Strike swinging"
                     sleep 1.25
+                    display.pitch_sequence << "Strike swinging"
                 end
             end
         end
@@ -301,10 +304,12 @@ class Game
                 puts "Strikeout!"
                 sleep 1.25
                 add_out
+                display.plays << "#{@current_hitter.name} struck out swinging #{@inning_outs}"
                 switch_batter
             else
                 puts "Strike swinging"
                 sleep 1.25
+                display.pitch_sequence << "Strike swinging"
             end
         end
         refresh
@@ -356,12 +361,16 @@ class Game
         case result
         when 1
             puts "Single!"
+            display.plays << "#{@current_hitter.name} singled"
         when 2
             puts "Double!"
+            display.plays << "#{@current_hitter.name} doubled"
         when 3
             puts "Triple!"
+            display.plays << "#{@current_hitter.name} tripled"
         when 4
             puts "HOME RUN!"
+            display.plays << "#{@current_hitter.name} homered"
         end
         sleep 1.25
     end
@@ -378,7 +387,9 @@ class Game
         @hitting_team.runs += players_scored.count
         players_scored.each do |player|
             puts "#{player.name} scored"
+            display.plays << "#{player.name} scored" 
         end
+        sleep 1.25
     end 
 
     def record_out
@@ -388,10 +399,16 @@ class Game
         elsif sac_fly_situation?(out_result)
             sac_fly_simulation
         else 
-            puts "#{current_hitter.name} flied out" if out_result == :f  
-            puts "#{current_hitter.name} grounded out" if out_result == :g 
+            if out_result == :f  
+                add_out
+                puts "#{current_hitter.name} flied out"
+                display.plays << "#{current_hitter.name} flied out #{@inning_outs}"
+            else  
+                add_out
+                puts "#{current_hitter.name} grounded out"
+                display.plays << "#{current_hitter.name} grounded out #{@inning_outs}"
+            end
             @current_hitter.at_bats += 1
-            @inning_outs += 1
         end
         sleep 1.25
     end
@@ -406,11 +423,15 @@ class Game
 
     def double_play_simulation
         if display.bases[0].speed == "A"
-            @inning_outs += 1
+            add_out
             display.bases << "empty"
+            puts "#{@current_hitter} grounded out"
+            display.plays << "#{@current_hitter} grounded out #{@inning_outs}"
         else
-            @inning_outs += 2
+            2.times {add_out}
             display.bases[0] = "empty"
+            puts "#{@current_hitter} grounded out. #{display.bases[0].name} out at second"
+            display.plays << "#{@current_hitter} grounded out. #{display.bases[0].name} out at second #{@inning_outs}"
         end
         @current_hitter.at_bats += 1
     end
@@ -420,7 +441,7 @@ class Game
             puts "#{display.bases[2].name} scored on a sac fly"
             @current_hitter.rbis += 1
             @hitting_team.runs += 1
-            @inning_outs += 1
+            add_out
         elsif display.bases[2].speed == "B"
             score_sim = [:O] * 7 + [:X] * 3
             result = score_sim.sample
@@ -428,10 +449,11 @@ class Game
                 puts "#{display.bases[2].name} scored on a sac fly"
                 @current_hitter.rbis += 1
                 @hitting_team.runs += 1
-                @inning_outs += 1
+                add_out
             else
                 puts "Double play! #{display.bases[2].name} tagged out at home"
-                @inning_outs += 2
+                2.times {add_out}
+                @current_hitter.at_bats += 1
             end
         end
         sleep 1.25
@@ -449,10 +471,12 @@ class Game
                 puts "Strikeout!"
                 sleep 1.25
                 add_out
+                display.plays << "#{@current_hitter.name} struck out swinging #{@inning_outs}"
                 switch_batter
             else
                 puts "Strike swinging"
                 sleep 1.25
+                display.pitch_sequence << "Strike swinging"
             end
         elsif swing_choice == "y" && pitch_result == :S 
             result = SWING_ON_STRIKE_OPTIONS.sample
@@ -462,21 +486,26 @@ class Game
                 @strikes += 1 unless @strikes == 2
                 puts "foul"
                 sleep 1.25
+                display.pitch_sequence << "Foul"
             elsif result == :s
                 @strikes += 1  
                 if strikeout?
                     puts "Strikeout!"
                     sleep 1.25
+                    add_out
+                    display.plays << "#{@current_hitter.name} struck out swinging #{@inning_outs}"
                     switch_batter
                 else
                     puts "Strike swinging"
                     sleep 1.25
+                    display.pitch_sequence << "Strike swinging"
                 end
             end
         elsif swing_choice == "n" && pitch_result == :B  
+            @balls += 1 
             puts "Ball"
             sleep 1.25 
-            @balls += 1 
+            display.pitch_sequence << "Ball"
             walk_batter?
         elsif swing_choice == "n" && pitch_result == :S   
             @strikes += 1
@@ -484,10 +513,12 @@ class Game
                 puts "Strikeout!"
                 sleep 1.25
                 add_out
+                display.plays << "#{@current_hitter.name} struck out looking #{@inning_outs}"
                 switch_batter
             else
                 puts "Strike looking"
                 sleep 1.25
+                display.pitch_sequence << "Strike looking"
             end
         end
         refresh
