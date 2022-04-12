@@ -68,9 +68,6 @@ class Display
         end
     end
 
-    #Pitcher.new("G. Cole", "A+", tendencies = {:fastball => {:S => 8, :B => 2}, :slider => {:S => 7, :B => 3}, :curveball => {:S => 5, :B => 5}, 
-    #:changeup => {:S => 5, :B => 5}}, 2, pitch_options = {1 => :fastball, 2 => :slider, 3 => :curveball, 4 => :changeup})
-
     def show_pitch_sequence
         puts ""
         puts "Pitch sequence:"
