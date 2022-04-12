@@ -2,12 +2,13 @@ class Display
 
     BASE_LINE_WIDTH = 22
     PITCH_BOX_WIDTH = 11
-    attr_reader :plays
+    attr_reader :plays, :pitch_sequence
     attr_accessor :bases
 
     def initialize
         @bases = ["empty", "empty", "empty"]
-        plays = []
+        @plays = []
+        @pitch_sequence = []
     end
 
     def show_pitch_options
@@ -42,18 +43,26 @@ class Display
         end
     end 
 
-    def render(pitcher, hitter, away_team, home_team, inning, inning_half, 
-        inning_outs, balls, strikes, strike_zone, current_pitch, reveal_pitch)
-        show_bases_and_score(away_team, home_team, inning_half, inning)
+    def pitch_count_and_outs(balls, strikes, inning_outs)
+        puts ""
         puts "#{balls}-#{strikes}, #{inning_outs} outs"
+    end
+
+    def show_strike_zone(current_pitch, strike_zone)
         puts ""
         puts "#{"".ljust(PITCH_BOX_WIDTH)} Last pitch: #{current_pitch}"
         strike_zone.each do |row|
             puts "#{" ".ljust(PITCH_BOX_WIDTH)} #{row.join(" ")}"
         end
+    end
+
+    def show_pitcher_and_batter(hitter, pitcher)
         puts ""
         puts "At bat: #{hitter.name} (#{hitter.hits}-#{hitter.at_bats},#{hitter.homers} HR #{hitter.rbis} RBI)"
         puts "Pitching: #{pitcher.name} (#{pitcher.pitches} P, #{pitcher.earned_runs} ER, Stamina: #{pitcher.stamina / 2})"
+    end
+
+    def show_pitch_selection_and_percentage(pitcher)
         puts ""
         puts "Select Pitch:"
         pitcher.pitch_options.each do |num, pitch|
@@ -65,5 +74,32 @@ class Display
             pitch_percentage = tend[:S] * 10
             puts "#{pitch}-#{pitch_percentage}%"
         end
+    end
+
+    def show_pitch_sequence
+        puts ""
+        puts "Pitch sequence:"
+        pitch_sequence.each_with_index do |pitch, i|
+            puts "#{i + 1}: #{pitch}"
+        end
+    end
+
+    def show_plays
+        puts ""
+        puts "Inning summary:"
+        plays.each do |play|
+            puts play
+        end
+    end
+
+    def render(pitcher, hitter, away_team, home_team, inning, inning_half, 
+        inning_outs, balls, strikes, strike_zone, current_pitch)
+        show_bases_and_score(away_team, home_team, inning_half, inning)
+        pitch_count_and_outs(balls, strikes, inning_outs)
+        show_strike_zone(current_pitch, strike_zone)
+        show_pitcher_and_batter(hitter, pitcher)
+        show_pitch_selection_and_percentage(pitcher)
+        show_pitch_sequence
+        show_plays
     end
 end
