@@ -47,11 +47,7 @@ class Display
         show_bases_and_score(away_team, home_team, inning_half, inning)
         puts "#{balls}-#{strikes}, #{inning_outs} outs"
         puts ""
-        if reveal_pitch
-            puts "#{"".ljust(PITCH_BOX_WIDTH)} Last pitch: #{current_pitch}"
-        else
-            puts "#{"".ljust(PITCH_BOX_WIDTH)} Last pitch:"
-        end
+        puts "#{"".ljust(PITCH_BOX_WIDTH)} Last pitch: #{current_pitch}"
         strike_zone.each do |row|
             puts "#{" ".ljust(PITCH_BOX_WIDTH)} #{row.join(" ")}"
         end

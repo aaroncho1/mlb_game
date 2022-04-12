@@ -19,7 +19,6 @@ class Game
         @display = Display.new
         @current_pitcher, @current_hitter, @current_pitch_zone, @current_pitch = pitching_team.pitchers[0] , hitting_team.hitters[0], nil, nil
         @strike_zone = Array.new(3){Array.new(3, "_")}
-        @reveal_pitch = false
     end
 
     def switch_batter
@@ -182,7 +181,6 @@ class Game
     end
 
     def update_strike_zone(pitch_result, zone)
-        @reveal_pitch = true
         row, col = zone
         @strike_zone[row][col] = pitch_result
     end
@@ -498,7 +496,7 @@ class Game
     def refresh
         system("clear")
         display.render(current_pitcher, current_hitter, away_team, home_team, @inning, 
-        inning_half, @inning_outs, @balls, @strikes, @strike_zone, @current_pitch, @reveal_pitch)
+        inning_half, @inning_outs, @balls, @strikes, @strike_zone, @current_pitch)
     end
 
     def welcome_message
