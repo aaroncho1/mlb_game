@@ -11,9 +11,6 @@ class Display
         @pitch_sequence = []
     end
 
-    def show_pitch_options
-    end
-
     def move_players(result, player)
         bases.unshift(player)
         (result - 1).times {bases.unshift("empty")} if result > 1
