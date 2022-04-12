@@ -47,7 +47,7 @@ class Display
 
     def show_strike_zone(current_pitch, strike_zone)
         puts ""
-        puts "#{"".ljust(PITCH_BOX_WIDTH)}Last pitch:"
+        puts "#{"".ljust(PITCH_BOX_WIDTH)} Last pitch:"
         strike_zone.each do |row|
             puts "#{" ".ljust(PITCH_BOX_WIDTH)} #{row.join(" ")}"
         end
@@ -61,17 +61,15 @@ class Display
 
     def show_pitch_selection_and_percentage(pitcher)
         puts ""
-        puts "Select Pitch:"
+        puts "#{"Select Pitch:".ljust(BASE_LINE_WIDTH)} Strike %:" 
         pitcher.pitch_options.each do |num, pitch|
-            puts "#{num}- #{pitch}"
-        end
-        puts ""
-        puts "Pitch strike %"
-        pitcher.tendencies.each do |pitch, tend|
-            pitch_percentage = tend[:S] * 10
-            puts "#{pitch}-#{pitch_percentage}%"
+            pitch_percentage = pitcher.tendencies[pitch][:S] * 10
+            puts "#{"#{num}- #{pitch}".ljust(BASE_LINE_WIDTH)} #{pitch_percentage}%"
         end
     end
+
+    #Pitcher.new("G. Cole", "A+", tendencies = {:fastball => {:S => 8, :B => 2}, :slider => {:S => 7, :B => 3}, :curveball => {:S => 5, :B => 5}, 
+    #:changeup => {:S => 5, :B => 5}}, 2, pitch_options = {1 => :fastball, 2 => :slider, 3 => :curveball, 4 => :changeup})
 
     def show_pitch_sequence
         puts ""
