@@ -26,6 +26,7 @@ class Game
         @strikes = 0
         @hitting_team.hitters.rotate!
         @current_hitter = @hitting_team.hitters.first
+        display.pitch_sequence = []
     end
 
     def score_difference
@@ -550,6 +551,7 @@ class Game
 
     def reset_inning
         @game_outs, @inning_outs, @balls, @strikes = 0, 0, 0, 0
+        display.plays = []
         @inning += 1 if inning_over?
     end
 
