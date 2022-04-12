@@ -22,7 +22,6 @@ class Pitcher
     def make_him_chase?
         puts ""
         puts "Pitching player, make him chase? (y/n)"
-        #add error here
         choice = gets.chomp.downcase
         choice
     end

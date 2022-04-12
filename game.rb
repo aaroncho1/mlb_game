@@ -112,6 +112,7 @@ class Game
     def current_batter_pitcher_simulation
         pitch_result = pitch(current_pitcher) #:S or :B
         swing(current_hitter, pitch_result)
+        reset_strike_zone
         update_strike_zone(pitch_result, @current_pitch_zone)
     end
 
