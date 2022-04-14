@@ -297,7 +297,7 @@ class Game
                     puts "Strikeout!"
                     sleep 1.25
                     add_out
-                    display.plays << "#{@current_hitter.name} struck out swinging #{@inning_outs}"
+                    display.plays << "#{@current_hitter.name} struck out swinging. #{@inning_outs} out"
                     switch_batter
                 else
                     puts "Strike swinging"
@@ -317,7 +317,7 @@ class Game
                 puts "Strikeout!"
                 sleep 1.25
                 add_out
-                display.plays << "#{@current_hitter.name} struck out swinging #{@inning_outs}"
+                display.plays << "#{@current_hitter.name} struck out swinging. #{@inning_outs} out"
                 switch_batter
             else
                 puts "Strike swinging"
@@ -415,11 +415,11 @@ class Game
             if out_result == :f  
                 add_out
                 puts "#{current_hitter.name} flied out"
-                display.plays << "#{current_hitter.name} flied out #{@inning_outs}"
+                display.plays << "#{current_hitter.name} flied out. #{@inning_outs} out"
             else  
                 add_out
                 puts "#{current_hitter.name} grounded out"
-                display.plays << "#{current_hitter.name} grounded out #{@inning_outs}"
+                display.plays << "#{current_hitter.name} grounded out. #{@inning_outs} out"
             end
             @current_hitter.at_bats += 1
         end
@@ -439,12 +439,12 @@ class Game
             add_out
             display.bases << "empty"
             puts "#{@current_hitter} grounded out"
-            display.plays << "#{@current_hitter} grounded out #{@inning_outs}"
+            display.plays << "#{@current_hitter} grounded out. #{@inning_outs} out"
         else
             2.times {add_out}
             display.bases[0] = "empty"
             puts "#{@current_hitter} grounded out. #{display.bases[0].name} out at second"
-            display.plays << "#{@current_hitter} grounded out. #{display.bases[0].name} out at second #{@inning_outs}"
+            display.plays << "#{@current_hitter} grounded out. #{display.bases[0].name} out at second. #{@inning_outs} out"
         end
         @current_hitter.at_bats += 1
     end
@@ -488,7 +488,7 @@ class Game
                 puts "Strikeout!"
                 sleep 1.25
                 add_out
-                display.plays << "#{@current_hitter.name} struck out swinging #{@inning_outs}"
+                display.plays << "#{@current_hitter.name} struck out swinging. #{@inning_outs} out"
                 switch_batter
             else
                 puts "Strike swinging"
@@ -496,7 +496,7 @@ class Game
                 display.pitch_sequence << "Strike swinging- #{@current_pitch}"
             end
         elsif swing_choice == "y" && pitch_result == :S 
-            result = middle_pitch? || hitter_hot? ? :h : SWING_ON_STRIKE_OPTIONS.sample
+            result = center_pitch? || hitter_hot? ? :h : SWING_ON_STRIKE_OPTIONS.sample
             if result == :h  
                 in_play_simulation(hitter)
             elsif result == :f  
@@ -510,7 +510,7 @@ class Game
                     puts "Strikeout!"
                     sleep 1.25
                     add_out
-                    display.plays << "#{@current_hitter.name} struck out swinging #{@inning_outs}"
+                    display.plays << "#{@current_hitter.name} struck out swinging. #{@inning_outs} out"
                     switch_batter
                 else
                     puts "Strike swinging"
@@ -530,7 +530,7 @@ class Game
                 puts "Strikeout!"
                 sleep 1.25
                 add_out
-                display.plays << "#{@current_hitter.name} struck out looking #{@inning_outs}"
+                display.plays << "#{@current_hitter.name} struck out looking. #{@inning_outs} out"
                 switch_batter
             else
                 puts "Strike looking"
