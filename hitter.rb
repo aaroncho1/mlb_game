@@ -82,7 +82,13 @@ class Hitter
 
     def swing?
         puts "Swing at pitch? (y/n):"
-        swing = gets.chomp.downcase
+        begin
+            swing = gets.chomp.downcase
+            raise "Invalid answer" if !["y","n"].include?(swing)
+        rescue => e   
+            puts e.message
+            retry
+        end
         swing
     end
 
