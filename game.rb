@@ -82,7 +82,7 @@ class Game
         if corner_pitch?
             hitter_tendencies.each {|base, freq| base == 0 ? tendencies += [base] * (freq + (freq/4)) : tendencies += [base] * freq}
             result = tendencies.flatten.sample
-        elsif center_pitch?
+        elsif center_pitch? || hitter_hot?
             hitter_tendencies.each {|base, freq| base == 0 ? tendencies += [base] * (freq / 3) : tendencies += [base] * freq}
             result =  tendencies.flatten.sample  
         else
@@ -476,6 +476,10 @@ class Game
         @balls == 4
     end
 
+    def hitter_hot?
+        @current_hitter.hits >= 2
+    end
+
     def hit_simulation(hitter, pitch_result)
         swing_choice = hitter.swing?
         if swing_choice == "y" && pitch_result == :B  
@@ -492,7 +496,7 @@ class Game
                 display.pitch_sequence << "Strike swinging- #{@current_pitch}"
             end
         elsif swing_choice == "y" && pitch_result == :S 
-            result = middle_pitch? ? result = :h : SWING_ON_STRIKE_OPTIONS.sample
+            result = middle_pitch? || hitter_hot? ? :h : SWING_ON_STRIKE_OPTIONS.sample
             if result == :h  
                 in_play_simulation(hitter)
             elsif result == :f  
