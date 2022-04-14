@@ -6,7 +6,7 @@ require_relative 'display'
 
 class Game
     CORNERS = [[0,0], [0,2], [2,0] [2,2]]
-    SWING_ON_STRIKE_OPTIONS = [:s, :s, :f, :f, :h, :h, :h, :h]
+    SWING_ON_STRIKE_OPTIONS = [:s, :s, :f, :f, :h, :h, :h, :h, :h, :h]
     attr_reader :display, :away_team, :home_team
     attr_accessor :current_pitcher, :inning_half, :pitching_team,
     :hitting_team, :current_hitter, :current_pitch_zone, :strike_zone
@@ -59,6 +59,10 @@ class Game
         CORNERS.include?(current_pitch_zone)
     end
 
+    def center_pitch?
+        current_pitch_zone == [1,1]
+    end
+
     def play
         # debugger
         welcome_message
@@ -76,18 +80,13 @@ class Game
         hitter_tendencies = hitter.tendencies
         tendencies = []
         if corner_pitch?
-            hitter_tendencies.each do |base,freq|
-                if k == 0
-                    tendencies += [base] * (freq + (freq/4))
-                else
-                    tendencies += [base] * freq
-                end
-            end
+            hitter_tendencies.each {|base, freq| base == 0 ? tendencies += [base] * (freq + (freq/4)) : tendencies += [base] * freq}
             result = tendencies.flatten.sample
+        elsif center_pitch?
+            hitter_tendencies.each {|base, freq| base == 0 ? tendencies += [base] * (freq / 3) : tendencies += [base] * freq}
+            result =  tendencies.flatten.sample  
         else
-            hitter_tendencies.each do |base, freq|
-                tendencies += [base] * freq
-            end
+            hitter_tendencies.each {|base, freq| base == 0 ? tendencies += [base] * (freq - (freq/4)) : tendencies += [base] * freq}
             result = tendencies.flatten.sample
         end
 
@@ -144,7 +143,9 @@ class Game
     end
 
     def second_result(pitcher, first_pitch_result, zone)
-        if first_pitch_result == :S && CORNERS.include?(zone)
+        if first_pitch_result == :S && center_pitch?
+            center_pitch_simulator(pitcher)
+        elsif first_pitch_result == :S && CORNERS.include?(zone)
             corner_pitch_simulator(pitcher)
         elsif first_pitch_result == :S && !CORNERS.include?(zone)
             middle_pitch_simulator(pitcher)
@@ -160,6 +161,16 @@ class Game
             display.plays << "#{@current_hitter.name} walked" 
             update_bases(1)
             switch_batter
+        end
+    end
+
+    def center_pitch_simulator(pitcher)
+        if pitcher.stamina >= 100
+            :S
+        elsif pitcher.stamina >= 50
+            [:S, :S, :S, :S, :S, :S, :S, :S, :S, :B].sample
+        else
+            [:S, :S, :S, :S, :S, :S, :S, :S, :B, :B].sample
         end
     end
 
@@ -481,7 +492,7 @@ class Game
                 display.pitch_sequence << "Strike swinging- #{@current_pitch}"
             end
         elsif swing_choice == "y" && pitch_result == :S 
-            result = SWING_ON_STRIKE_OPTIONS.sample
+            result = middle_pitch? ? result = :h : SWING_ON_STRIKE_OPTIONS.sample
             if result == :h  
                 in_play_simulation(hitter)
             elsif result == :f  
