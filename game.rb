@@ -262,15 +262,15 @@ class Game
 
     def batters_eye_simulation(pitch_result)
         if @current_pitcher.grade == "A+"
-            see_pitch = [:n, :n, :n, :n, :n, :n, :n, :n, :n, :y].sample
-        elsif @current_pitcher.grade == "A"
             see_pitch = [:n, :n, :n, :n, :n, :n, :n, :n, :y, :y].sample
-        elsif @current_pitcher.grade == "B+"
+        elsif @current_pitcher.grade == "A"
             see_pitch = [:n, :n, :n, :n, :n, :n, :n, :y, :y, :y].sample
-        elsif @current_pitcher.grade == "B"
+        elsif @current_pitcher.grade == "B+"
             see_pitch = [:n, :n, :n, :n, :n, :n, :y, :y, :y, :y].sample
-        else 
+        elsif @current_pitcher.grade == "B"
             see_pitch = [:n, :n, :n, :n, :n, :y, :y, :y, :y, :y].sample
+        else 
+            see_pitch = [:n, :n, :n, :n, :y, :y, :y, :y, :y, :y].sample
         end
         
         if see_pitch == :y  
