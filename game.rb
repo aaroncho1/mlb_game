@@ -203,6 +203,78 @@ class Game
         @strike_zone = Array.new(3){Array.new(3, "_")}
     end
 
+    def stolen_base_simulation(base)
+        if base == 0
+            player_on_first = display.bases[base]
+            if player_on_first.speed == "A"
+                result = ([:O] * 7 + [:X] * 3).sample
+            elsif player_on_first.speed == "B"
+                result = ([:O] * 5 + [:X] * 5).sample
+            else 
+                result = ([:O] * 3 + [:X] * 7).sample
+            end
+            if result == :O  
+                puts "#{player_on_first.name} stole second!"
+                sleep 1.25
+                display.plays << "#{player_on_first.name} stole second"
+                display.bases[1] = player_on_first
+                display.bases[0] = "empty"
+            else
+                add_out
+                display.bases[0] = "empty"
+                puts "#{player_on_first.name} caught stealing!"
+                sleep 1.25
+                display.plays << "#{player_on_first.name} caught stealing! #{@inning_outs} out"
+            end
+        elsif base == 1
+            player_on_second = display.bases[1]
+            if player_on_second.speed == "A" 
+                result = ([:O] * 5 + [:X] * 5).sample
+            elsif player_on_second.speed == "B"
+                result = ([:O] * 3 + [:X] * 7).sample
+            else 
+                result = ([:O] * 2 + [:X] * 8).sample
+            end
+            if result == :O  
+                puts "#{player_on_second.name} stole third!"
+                sleep 1.25
+                display.plays << "#{player_on_second.name} stole third"
+                display.bases[2] = player_on_second
+                display.bases[1] = "empty"
+            else
+                add_out
+                display.bases[1] = "empty"
+                puts "#{player_on_second.name} caught stealing!"
+                sleep 1.25
+                display.plays << "#{player_on_second.name} caught stealing! #{@inning_outs} out"
+            end
+        elsif base == 2
+            player_on_third = display.bases[2]
+            if player_on_third.speed == "A" 
+                result = ([:O] * 2 + [:X] * 8).sample
+            elsif player_on_third.speed == "B"
+                result = ([:O] * 1 + [:X] * 10).sample
+            else 
+                result = ([:O] * 1 + [:X] * 20).sample
+            end
+            if result == :O  
+                puts "#{player_on_third.name} stole home!"
+                sleep 1.25
+                display.plays << "#{player_on_third.name} stole home"
+                display.plays << "#{player_on_third.name} scored"
+                display.bases[2] = "empty"
+                @hitting_team.runs += 1
+            else
+                add_out
+                display.bases[2] = "empty"
+                puts "#{player_on_third.name} caught stealing!"
+                sleep 1.25
+                display.plays << "#{player_on_third.name} caught stealing! #{@inning_outs} out"
+            end
+        end
+        refresh
+    end
+            
     def swing(hitter, pitch_result)
         system("clear")
         puts "Batter's turn"
@@ -210,6 +282,8 @@ class Game
         system("clear")
         sleep 0.25
         refresh 
+        base_to_steal_from = hitter.steal_base?(display) if display.runner_on_base?
+        stolen_base_simulation(base_to_steal_from) if base_to_steal_from
         go_for_hr = try_for_homerun?
         unless go_for_hr
             batters_eye_simulation(pitch_result)
@@ -305,9 +379,7 @@ class Game
                     display.pitch_sequence << "Strike swinging- #{@current_pitch}"
                 end
             end
-        end
-
-        if guessed_zone_num == current_pitch_zone[0]
+        elsif guessed_zone_num == current_pitch_zone[0]
             puts "Pitch zone guessed correctly"
             sleep 1.25
             in_play_guessed_zone_simulation(hitter)

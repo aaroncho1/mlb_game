@@ -1,5 +1,6 @@
-class Display
+require_relative 'hitter'
 
+class Display
     BASE_LINE_WIDTH = 22
     PITCH_BOX_WIDTH = 11
     attr_accessor :bases, :plays, :pitch_sequence
@@ -8,6 +9,10 @@ class Display
         @bases = ["empty", "empty", "empty"]
         @plays = []
         @pitch_sequence = []
+    end
+
+    def runner_on_base?
+        bases[0..2].any?{|base| base.is_a?(Hitter)}
     end
 
     def move_players(result, player)

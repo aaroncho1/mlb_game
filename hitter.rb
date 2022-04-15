@@ -16,6 +16,27 @@ class Hitter
         @at_bats += 1
     end
 
+    def steal_base?(display)
+        puts ""
+        puts "Hitting player, steal base? (y/n)"
+        choice = gets.chomp.downcase
+        if choice == "y"
+            puts "Select base you want to steal from (1-3):"
+            begin
+                base_chosen = gets.chomp.to_i - 1
+                raise "Invalid base number. Try again:" if !base_chosen.between?(0,2)
+                raise "Cannot steal from empty base" if !display.bases[base_chosen].is_a?(Hitter)
+            rescue => e   
+                puts e.message
+                retry
+            end
+            base_chosen 
+        else
+            base_chosen = false
+        end
+        base_chosen
+    end
+
     def swing_for_the_fences?(pitch_zone)
         puts ""
         puts "Hitting player, swing for the fences? (y/n)"
