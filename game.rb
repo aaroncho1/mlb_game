@@ -13,7 +13,7 @@ class Game
 
     def initialize(away_team, home_team)
         @away_team, @home_team = away_team, home_team
-        @game_outs, @inning_outs, @balls, @strikes, @inning = 0, 0, 0, 0, 1
+        @game_outs, @inning_outs, @inning_runs, @balls, @strikes, @inning = 0, 0, 0, 0, 0, 1
         @inning_half = "Top"
         @pitching_team, @hitting_team = home_team, away_team
         @display = Display.new
@@ -106,6 +106,7 @@ class Game
             until half_inning_over?
                 play_half_inning
             end
+            display.add_runs_to_inning(@inning_runs)
             switch_sides
             reset_inning
         end
@@ -120,6 +121,7 @@ class Game
         else
             puts "#{away_team.name} wins by the score of #{away_team.runs} - #{home_team.runs}"
         end
+        sleep 3
     end
 
     def play
@@ -129,11 +131,13 @@ class Game
         until game_won? 
             play_half_inning
             if half_inning_over?
+                display.add_runs_to_inning(@inning_runs)
                 switch_sides
                 reset_inning
             end
         end
         winner_message
+        display.display_runs_summary(@inning, away_team, home_team)
     end
 
     def in_play_simulation(hitter)
@@ -182,6 +186,7 @@ class Game
             sleep 1.25
             display.plays << "#{display.bases[2].name} scored"
             @hitting_team.runs += 1
+            @inning_runs += 1
             @current_hitter.rbis += 1
             remove_scored_players
         elsif display.first_base_open?
@@ -335,6 +340,7 @@ class Game
                 sleep 1.25
                 display.plays << "#{player_on_third.name} scored"
                 @hitting_team.runs += 1
+                @inning_runs += 1
             else
                 add_out
                 caught_stealing_message_and_update_bases
@@ -538,6 +544,7 @@ class Game
         players_scored = display.bases.select{|player| display.bases.index(player) > 2 && player.is_a?(Hitter)}
         @current_hitter.rbis += players_scored.count
         @hitting_team.runs += players_scored.count
+        @inning_runs += players_scored.count
         players_scored.each do |player|
             puts "#{player.name} scored"
             display.plays << "#{player.name} scored" 
@@ -617,6 +624,7 @@ class Game
             display.plays << "#{display.bases[2].name} scored on a sac fly"
             @current_hitter.rbis += 1
             @hitting_team.runs += 1
+            @inning_runs += 1
             display.bases[2] = "empty"
             add_out
         else  
@@ -723,7 +731,7 @@ class Game
     end
 
     def reset_inning
-        @inning_outs, @balls, @strikes = 0, 0, 0
+        @inning_outs, @inning_runs, @balls, @strikes = 0, 0, 0, 0
         display.plays = []
         display.bases = ["empty", "empty", "empty"]
         @inning += 1 if inning_over?

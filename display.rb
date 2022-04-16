@@ -4,12 +4,33 @@ require_relative 'hitter'
 class Display
     BASE_LINE_WIDTH = 22
     PITCH_BOX_WIDTH = 11
-    attr_accessor :bases, :plays, :pitch_sequence
+    PLAYER_COL_WIDTH = 15
+    STAT_COL_WIDTH = 6
+    attr_accessor :bases, :plays, :pitch_sequence, :inning_runs
 
     def initialize
         @bases = ["empty", "empty", "empty"]
         @plays = []
         @pitch_sequence = []
+        @inning_runs = []
+    end
+
+    def add_runs_to_inning(runs)
+        inning_runs << runs
+    end
+
+    def display_runs_summary(innings_played, away_team, home_team)
+        system("clear")
+        puts "-" * 20 + "GAME SUMMARY" + "-" * 20
+        all_innings = (1..innings_played).to_a.join(" ")
+        puts "      #{all_innings[0...-1]}   R H"
+        away_team_runs = []
+        home_team_runs = []
+        away_team_hits = away_team.hitters.map{|away_hitter| away_hitter.hits}.sum
+        home_team_hits = home_team.hitters.map{|home_hitter| home_hitter.hits}.sum
+        @inning_runs.each_with_index {|runs, i| i.even? ? away_team_runs << runs : home_team_runs << runs}
+        puts "#{away_team.name}   #{away_team_runs.join(" ")}    #{away_team_runs.sum} #{away_team_hits}"
+        puts "#{home_team.name}   #{home_team_runs.join(" ")}    #{home_team_runs.sum} #{home_team_hits}"
     end
 
     def first_base_open?
