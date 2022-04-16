@@ -2,7 +2,7 @@ require_relative 'hitter'
 require_relative 'pitcher'
 require_relative 'team'
 require_relative 'display'
-# require 'byebug'
+require 'byebug'
 
 class Game
     CORNERS = [[0,0], [0,2], [2,0] [2,2]]
@@ -64,7 +64,7 @@ class Game
     end
 
     def play
-        # debugger
+        debugger
         welcome_message
         enter_to_start
         until game_won? #outs == 27
@@ -103,10 +103,6 @@ class Game
         @strikes == 3
     end
 
-    def first_pitch?
-        @balls + @strikes == 0
-    end
-
     def play_half_inning
         refresh
         current_batter_pitcher_simulation   
@@ -139,7 +135,7 @@ class Game
     end     
 
     def pitch(pitcher)
-        intentional_walk = pitcher.intentional_walk? if first_pitch?
+        intentional_walk = pitcher.intentional_walk?
         if intentional_walk
             puts "Intentional walk"
             sleep 1.25
@@ -688,7 +684,7 @@ class Game
     end
 
     def reset_inning
-        @game_outs, @inning_outs, @balls, @strikes = 0, 0, 0, 0
+        @inning_outs, @balls, @strikes = 0, 0, 0
         display.plays = []
         @inning += 1 if inning_over?
     end
@@ -697,6 +693,7 @@ class Game
         @inning_half = @inning_half == "Top" ? "Bottom" : "Top"
         @pitching_team = @pitching_team == home_team ? away_team : home_team
         @hitting_team = @hitting_team == home_team ? away_team : home_team
+        @current_hitter, @current_pitcher = @hitting_team.hitters[0], @pitching_team.pitchers[0]
     end
 end
 
