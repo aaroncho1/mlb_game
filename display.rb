@@ -1,3 +1,4 @@
+require "colorize"
 require_relative 'hitter'
 
 class Display
@@ -104,8 +105,20 @@ class Display
         puts ""
         puts "Inning summary:"
         plays.each do |play|
-            puts play
+            color_options = colors_for(play)
+            puts play.to_s.colorize(color_options)
         end
+    end
+
+    def colors_for(play)
+        if play.include?("scored")
+            color = :green 
+        elsif play.include?("out")
+            color = :red  
+        else
+            color = :white
+        end
+        { color: color }
     end
 
     def render(pitcher, hitter, away_team, home_team, inning, inning_half, 
