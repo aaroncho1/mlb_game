@@ -19,6 +19,13 @@ class Pitcher
         @strikes += 1 if result == :S   
     end
 
+    def intentional_walk?
+        puts ""
+        puts "Pitching player, walk batter? (y/n)"
+        choice = gets.chomp.downcase
+        choice == "y" ? true : false
+    end
+
     def make_him_chase?
         puts ""
         puts "Pitching player, make him chase? (y/n)"

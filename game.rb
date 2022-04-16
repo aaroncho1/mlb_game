@@ -115,7 +115,34 @@ class Game
         update_strike_zone(pitch_result, @current_pitch_zone)
     end
 
+    def update_bases_on_walk
+        if display.bases_loaded?
+            bases.unshift(@current_hitter)
+            puts "#{display.bases[2].name} scored"
+            sleep 1.25
+            display.plays << "#{display.bases[2].name} scored"
+            @hitting_team.runs += 1
+            @current_hitter.rbis += 1
+            remove_scored_players
+        elsif display.first_base_open?
+            display.bases[0] = @current_hitter
+        elsif display.men_on_first_and_second?
+            display.bases.unshift(@current_hitter)
+        elsif display.men_on_corners?
+            display.bases.delete(display.bases[1])
+            display.bases.unshift(@current_hitter)
+        end
+    end     
+
     def pitch(pitcher)
+        intentional_walk = pitcher.intentional_walk?
+        if intentional_walk
+            puts "Intentional walk"
+            sleep 1.25
+            display.plays << "#{@current_hitter.name} intentionally walked" 
+            update_bases_on_walk
+            switch_batter
+        end
         pitch = pitcher.choose_pitch #:fastball
         zone = pitcher.choose_zone #[2,0]
         @current_pitch_zone = zone #resets the current pitch with each pitch
@@ -159,7 +186,7 @@ class Game
             puts "Walk!"
             sleep 1.25
             display.plays << "#{@current_hitter.name} walked" 
-            update_bases(1)
+            update_bases_on_walk
             switch_batter
         end
     end
@@ -259,6 +286,7 @@ class Game
             end
             if result == :O  
                 puts "#{player_on_third.name} stole home!"
+                puts "#{player_on_third.name} scored"
                 sleep 1.25
                 display.plays << "#{player_on_third.name} stole home"
                 display.plays << "#{player_on_third.name} scored"
@@ -475,7 +503,12 @@ class Game
             display.plays << "#{player.name} scored" 
         end
         sleep 1.25
+        remove_scored_players
     end 
+
+    def remove_scored_players
+        display.bases = display.bases[0..2]
+    end
 
     def record_out
         out_result = [:g, :f].sample
@@ -523,25 +556,35 @@ class Game
 
     def sac_fly_simulation
         if display.bases[2].speed == "A"
-            puts "#{display.bases[2].name} scored on a sac fly"
-            @current_hitter.rbis += 1
-            @hitting_team.runs += 1
-            add_out
+            sac_fly_run_sim(:O)
         elsif display.bases[2].speed == "B"
             score_sim = [:O] * 7 + [:X] * 3
             result = score_sim.sample
-            if result == :O 
-                puts "#{display.bases[2].name} scored on a sac fly"
-                @current_hitter.rbis += 1
-                @hitting_team.runs += 1
-                add_out
-            else
-                puts "Double play! #{display.bases[2].name} tagged out at home"
-                2.times {add_out}
-                @current_hitter.at_bats += 1
-            end
+            sac_fly_run_sim(result)
+        else
+            score_sim = [:O] * 5 + [:X] * 5
+            result = score_sim.sample
+            sac_fly_run_sim(result)
         end
         sleep 1.25
+    end
+
+    def sac_fly_run_sim(result)
+        if result == :O 
+            puts "#{display.bases[2].name} scored on a sac fly"
+            sleep 1.25
+            display.plays << "#{display.bases[2].name} scored on a sac fly"
+            @current_hitter.rbis += 1
+            @hitting_team.runs += 1
+            display.bases[2] = "empty"
+            add_out
+        else  
+            puts "Double play! #{display.bases[2].name} tagged out at home" 
+            2.times {add_out} 
+            @current_hitter.at_bats += 1
+            display.plays << "Double play! #{display.bases[2].name} tagged out at home. #{@inning_outs} out"
+            display.bases[2] = "empty"
+        end
     end
 
     def walk?

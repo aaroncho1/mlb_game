@@ -11,6 +11,22 @@ class Display
         @pitch_sequence = []
     end
 
+    def first_base_open?
+        bases[0] == "empty"
+    end
+
+    def men_on_first_and_second?
+        bases[0].is_a?(Hitter) && bases[1].is_a?(Hitter) && bases[2] == "empty"
+    end
+
+    def men_on_corners?
+        bases[0].is_a?(Hitter) && bases[1] == "empty" && bases[2].is_a?(Hitter)
+    end
+
+    def bases_loaded?
+        bases[0..2].all?{|player| player.is_a?(Hitter)}
+    end
+
     def runner_on_base?
         bases[0..2].any?{|base| base.is_a?(Hitter)}
     end
