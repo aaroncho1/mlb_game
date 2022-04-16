@@ -22,8 +22,7 @@ class Game
     end
 
     def switch_batter
-        @balls = 0
-        @strikes = 0
+        @balls, @strikes = 0, 0
         @hitting_team.hitters.rotate!
         @current_hitter = @hitting_team.hitters.first
         display.pitch_sequence = []
@@ -61,6 +60,35 @@ class Game
 
     def center_pitch?
         current_pitch_zone == [1,1]
+    end
+
+    def intentional_walk_message
+        puts "Intentional walk"
+        sleep 1.25
+        display.plays << "#{@current_hitter.name} intentionally walked"
+    end
+
+    def walk_message
+        puts "Walk!"
+        sleep 1.25
+        display.plays << "#{@current_hitter.name} walked"
+    end
+
+    def stolen_base_message_and_update_bases(base)
+        player = display.bases[base]
+        puts "#{player.name} stole #{"second" if base == 0} #{"third" if base == 1} #{"home" if base == 2}!"
+        sleep 1.25
+        display.plays << "#{player.name} stole #{"second" if base == 0} #{"third" if base == 1} #{"home" if base == 2}"
+        display.bases[base + 1] = player unless base == 2
+        display.bases[base] = "empty"
+    end
+
+    def caught_stealing_message_and_update_bases(base)
+        player = display.bases[base]
+        puts "#{player.name} caught stealing!"
+        sleep 1.25
+        display.plays << "#{player.name} caught stealing! #{@inning_outs} out"
+        display.bases[base] = "empty"
     end
 
     def play
@@ -137,9 +165,7 @@ class Game
     def pitch(pitcher)
         intentional_walk = pitcher.intentional_walk?
         if intentional_walk
-            puts "Intentional walk"
-            sleep 1.25
-            display.plays << "#{@current_hitter.name} intentionally walked" 
+            intentional_walk_message
             update_bases_on_walk
             switch_batter
             refresh
@@ -185,9 +211,7 @@ class Game
 
     def walk_batter?
         if walk?
-            puts "Walk!"
-            sleep 1.25
-            display.plays << "#{@current_hitter.name} walked" 
+            walk_message 
             update_bases_on_walk
             switch_batter
             refresh
@@ -244,17 +268,10 @@ class Game
                 result = ([:O] * 3 + [:X] * 7).sample
             end
             if result == :O  
-                puts "#{player_on_first.name} stole second!"
-                sleep 1.25
-                display.plays << "#{player_on_first.name} stole second"
-                display.bases[1] = player_on_first
-                display.bases[0] = "empty"
+                stolen_base_message_and_update_bases(base)
             else
                 add_out
-                display.bases[0] = "empty"
-                puts "#{player_on_first.name} caught stealing!"
-                sleep 1.25
-                display.plays << "#{player_on_first.name} caught stealing! #{@inning_outs} out"
+                caught_stealing_message_and_update_bases(base)
             end
         elsif base == 1
             player_on_second = display.bases[1]
@@ -265,18 +282,11 @@ class Game
             else 
                 result = ([:O] * 2 + [:X] * 8).sample
             end
-            if result == :O  
-                puts "#{player_on_second.name} stole third!"
-                sleep 1.25
-                display.plays << "#{player_on_second.name} stole third"
-                display.bases[2] = player_on_second
-                display.bases[1] = "empty"
+            if result == :O 
+                stolen_base_message_and_update_bases(base) 
             else
                 add_out
-                display.bases[1] = "empty"
-                puts "#{player_on_second.name} caught stealing!"
-                sleep 1.25
-                display.plays << "#{player_on_second.name} caught stealing! #{@inning_outs} out"
+                caught_stealing_message_and_update_bases(base)
             end
         elsif base == 2
             player_on_third = display.bases[2]
@@ -288,19 +298,14 @@ class Game
                 result = ([:O] * 1 + [:X] * 20).sample
             end
             if result == :O  
-                puts "#{player_on_third.name} stole home!"
+                stolen_base_message_and_update_bases(base)
                 puts "#{player_on_third.name} scored"
                 sleep 1.25
-                display.plays << "#{player_on_third.name} stole home"
                 display.plays << "#{player_on_third.name} scored"
-                display.bases[2] = "empty"
                 @hitting_team.runs += 1
             else
                 add_out
-                display.bases[2] = "empty"
-                puts "#{player_on_third.name} caught stealing!"
-                sleep 1.25
-                display.plays << "#{player_on_third.name} caught stealing! #{@inning_outs} out"
+                caught_stealing_message_and_update_bases
             end
         end
         refresh
