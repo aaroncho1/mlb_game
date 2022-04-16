@@ -115,8 +115,6 @@ class Display
             color = :green 
         elsif play.include?("out")
             color = :red  
-        else
-            color = :white
         end
         { color: color }
     end
