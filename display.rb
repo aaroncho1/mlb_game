@@ -4,8 +4,8 @@ require_relative 'hitter'
 class Display
     BASE_LINE_WIDTH = 22
     PITCH_BOX_WIDTH = 11
-    PLAYER_COL_WIDTH = 15
-    STAT_COL_WIDTH = 6
+    PLAYER_COL_WIDTH = 20
+    STAT_COL_WIDTH = 4
     attr_accessor :bases, :plays, :pitch_sequence, :inning_runs
 
     def initialize
@@ -31,6 +31,19 @@ class Display
         @inning_runs.each_with_index {|runs, i| i.even? ? away_team_runs << runs : home_team_runs << runs}
         puts "#{away_team.name}   #{away_team_runs.join(" ")}    #{away_team_runs.sum} #{away_team_hits}"
         puts "#{home_team.name}   #{home_team_runs.join(" ")}    #{home_team_runs.sum} #{home_team_hits}"
+    end
+
+    def display_box_score(away, home)
+        puts "-" * 21 + "BOX SCORE" + "-" * 22
+        puts "#{"Batters - #{away.name}".ljust(PLAYER_COL_WIDTH)} #{"AB".ljust(STAT_COL_WIDTH)} #{"H".ljust(STAT_COL_WIDTH)} #{"HR".ljust(STAT_COL_WIDTH)} #{"RBI".ljust(STAT_COL_WIDTH)} #{"BB".ljust(STAT_COL_WIDTH)}"
+        away.batting_order.each do |player|
+            puts "#{"#{player.name} #{player.position}".ljust(PLAYER_COL_WIDTH)} #{player.at_bats.to_s.ljust(STAT_COL_WIDTH)} #{player.hits.to_s.ljust(STAT_COL_WIDTH)} #{player.homers.to_s.ljust(STAT_COL_WIDTH)} #{player.rbis.to_s.ljust(STAT_COL_WIDTH)} #{player.walks.to_s.ljust(STAT_COL_WIDTH)}"
+        end 
+        puts ""
+        puts "#{"Batters - #{home.name}".ljust(PLAYER_COL_WIDTH)} #{"AB".ljust(STAT_COL_WIDTH)} #{"H".ljust(STAT_COL_WIDTH)} #{"HR".ljust(STAT_COL_WIDTH)} #{"RBI".ljust(STAT_COL_WIDTH)} #{"BB".ljust(STAT_COL_WIDTH)}"
+        home.batting_order.each do |player|
+            puts "#{"#{player.name} #{player.position}".ljust(PLAYER_COL_WIDTH)} #{player.at_bats.to_s.ljust(STAT_COL_WIDTH)} #{player.hits.to_s.ljust(STAT_COL_WIDTH)} #{player.homers.to_s.ljust(STAT_COL_WIDTH)} #{player.rbis.to_s.ljust(STAT_COL_WIDTH)} #{player.walks.to_s.ljust(STAT_COL_WIDTH)}"
+        end
     end
 
     def first_base_open?

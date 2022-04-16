@@ -33,12 +33,12 @@ class Game
     end
 
     def extra_innings?
-        @game_outs >= 54 && score_difference == 0
+        @game_outs >= 6 && score_difference == 0
     end
 
     def game_won?
         play_extra_innings if extra_innings?
-        @game_outs >= 54 && score_difference != 0
+        @game_outs >= 6 && score_difference != 0
     end
 
     def extra_innings_game_over?
@@ -124,6 +124,11 @@ class Game
         sleep 3
     end
 
+    def any_key_to_continue
+        puts "Press any key to continue to game summary:"
+        cmd = gets.chomp.downcase
+    end
+
     def play
         # debugger
         welcome_message
@@ -137,7 +142,9 @@ class Game
             end
         end
         winner_message
+        any_key_to_continue
         display.display_runs_summary(@inning, away_team, home_team)
+        display.display_box_score(away_team, home_team)
     end
 
     def in_play_simulation(hitter)
@@ -197,6 +204,7 @@ class Game
             display.bases.delete(display.bases[1])
             display.bases.unshift(@current_hitter)
         end
+        @current_hitter.walks += 1
     end     
 
     def pitch(pitcher)
