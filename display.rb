@@ -15,6 +15,10 @@ class Display
         bases[0] == "empty"
     end
 
+    def man_on_first?
+        bases[0].is_a?(Hitter) && bases[1] == "empty" && bases[2] == "empty"
+    end
+
     def men_on_first_and_second?
         bases[0].is_a?(Hitter) && bases[1].is_a?(Hitter) && bases[2] == "empty"
     end

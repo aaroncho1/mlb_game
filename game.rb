@@ -103,6 +103,10 @@ class Game
         @strikes == 3
     end
 
+    def first_pitch?
+        @balls + @strikes == 0
+    end
+
     def play_half_inning
         refresh
         current_batter_pitcher_simulation   
@@ -117,7 +121,7 @@ class Game
 
     def update_bases_on_walk
         if display.bases_loaded?
-            bases.unshift(@current_hitter)
+            display.bases.unshift(@current_hitter)
             puts "#{display.bases[2].name} scored"
             sleep 1.25
             display.plays << "#{display.bases[2].name} scored"
@@ -126,7 +130,7 @@ class Game
             remove_scored_players
         elsif display.first_base_open?
             display.bases[0] = @current_hitter
-        elsif display.men_on_first_and_second?
+        elsif display.men_on_first_and_second? || display.man_on_first?
             display.bases.unshift(@current_hitter)
         elsif display.men_on_corners?
             display.bases.delete(display.bases[1])
@@ -135,13 +139,15 @@ class Game
     end     
 
     def pitch(pitcher)
-        intentional_walk = pitcher.intentional_walk?
+        intentional_walk = pitcher.intentional_walk? if first_pitch?
         if intentional_walk
             puts "Intentional walk"
             sleep 1.25
             display.plays << "#{@current_hitter.name} intentionally walked" 
             update_bases_on_walk
             switch_batter
+            refresh
+            current_batter_pitcher_simulation
         end
         pitch = pitcher.choose_pitch #:fastball
         zone = pitcher.choose_zone #[2,0]
@@ -188,6 +194,7 @@ class Game
             display.plays << "#{@current_hitter.name} walked" 
             update_bases_on_walk
             switch_batter
+            refresh
         end
     end
 
@@ -547,9 +554,9 @@ class Game
             display.plays << "#{@current_hitter} grounded out. #{@inning_outs} out"
         else
             2.times {add_out}
-            display.bases[0] = "empty"
             puts "#{@current_hitter} grounded out. #{display.bases[0].name} out at second"
             display.plays << "#{@current_hitter} grounded out. #{display.bases[0].name} out at second. #{@inning_outs} out"
+            display.bases[0] = "empty"
         end
         @current_hitter.at_bats += 1
     end
