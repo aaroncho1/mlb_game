@@ -33,12 +33,16 @@ class Game
     end
 
     def extra_innings?
-        @game_outs >= 27 && score_difference == 0
+        @game_outs >= 54 && score_difference == 0
     end
 
     def game_won?
         play_extra_innings if extra_innings?
-        @game_outs == 27 && score_difference != 0
+        @game_outs >= 54 && score_difference != 0
+    end
+
+    def game_over?
+        ((away_team.runs > home_team.runs) && (@game_outs % 6 == 0)) || (home_team.runs > away_team.runs)
     end
 
     def half_inning_over?
@@ -91,6 +95,27 @@ class Game
         display.bases[base] = "empty"
     end
 
+    def play_extra_innings
+        until game_over?
+            play_half_inning
+            if half_inning_over?
+                switch_sides
+                reset_inning
+            end
+        end
+    end
+
+    def winner_message
+        refresh
+        puts ""
+        puts "GAME OVER"
+        if home_team.runs > away_team.runs 
+            puts "#{home_team.name} wins by the score of #{home_team.runs} - #{away_team.runs}"
+        else
+            puts "#{away_team.name} wins by the score of #{away_team.runs} - #{home_team.runs}"
+        end
+    end
+
     def play
         # debugger
         welcome_message
@@ -102,6 +127,7 @@ class Game
                 reset_inning
             end
         end
+        winner_message
     end
 
     def in_play_simulation(hitter)
