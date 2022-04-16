@@ -555,8 +555,9 @@ class Game
             display.plays << "#{@current_hitter} grounded out. #{@inning_outs} out"
         else
             2.times {add_out}
-            puts "#{@current_hitter} grounded out. #{display.bases[0].name} out at second"
-            display.plays << "#{@current_hitter} grounded out. #{display.bases[0].name} out at second. #{@inning_outs} out"
+            puts "Double play! #{@current_hitter.name} grounded out. #{display.bases[0].name} out at second"
+            sleep 1.25
+            display.plays << "#{@current_hitter.name} grounded out. #{display.bases[0].name} out at second. #{@inning_outs} out"
             display.bases[0] = "empty"
         end
         @current_hitter.at_bats += 1
@@ -588,6 +589,7 @@ class Game
             add_out
         else  
             puts "Double play! #{display.bases[2].name} tagged out at home" 
+            sleep 1.25
             2.times {add_out} 
             @current_hitter.at_bats += 1
             display.plays << "Double play! #{display.bases[2].name} tagged out at home. #{@inning_outs} out"
