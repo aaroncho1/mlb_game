@@ -41,7 +41,7 @@ class Game
         @game_outs >= 54 && score_difference != 0
     end
 
-    def game_over?
+    def extra_innings_game_over?
         ((away_team.runs > home_team.runs) && (@game_outs % 6 == 0)) || (home_team.runs > away_team.runs)
     end
 
@@ -95,13 +95,19 @@ class Game
         display.bases[base] = "empty"
     end
 
+    def put_man_on_second
+        display.bases[1] = @current_hitter
+        switch_batter
+    end
+
     def play_extra_innings
-        until game_over?
-            play_half_inning
-            if half_inning_over?
-                switch_sides
-                reset_inning
+        until extra_innings_game_over?
+            put_man_on_second
+            until half_inning_over?
+                play_half_inning
             end
+            switch_sides
+            reset_inning
         end
     end
 
@@ -719,6 +725,7 @@ class Game
     def reset_inning
         @inning_outs, @balls, @strikes = 0, 0, 0
         display.plays = []
+        display.bases = ["empty", "empty", "empty"]
         @inning += 1 if inning_over?
     end
 
