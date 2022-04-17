@@ -351,7 +351,7 @@ class Game
                 @inning_runs += 1
             else
                 add_out
-                caught_stealing_message_and_update_bases
+                caught_stealing_message_and_update_bases(base)
             end
         end
         refresh
