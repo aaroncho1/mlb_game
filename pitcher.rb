@@ -44,7 +44,7 @@ class Pitcher
             retry 
         end
         chosen_pitch = pitch_options[pitch]
-        chosen_pitch #:fastball
+        chosen_pitch 
     end
 
     def choose_zone
