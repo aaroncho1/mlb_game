@@ -33,12 +33,12 @@ class Game
     end
 
     def extra_innings?
-        @game_outs >= 6 && score_difference == 0
+        @game_outs >= 54 && score_difference == 0
     end
 
     def game_won?
         play_extra_innings if extra_innings?
-        @game_outs >= 6 && score_difference != 0
+        @game_outs >= 54 && score_difference != 0
     end
 
     def extra_innings_game_over?
@@ -403,7 +403,7 @@ class Game
             if base == 0
                 arr << [base] * (freq/10)
             else  
-                arr << [base] * (freq * 3)
+                arr << [base] * (freq * 5)
             end
         end
         result = arr.flatten.sample
@@ -415,6 +415,9 @@ class Game
         end
     end
 
+    def batters_eye_second_chance
+        see_pitch = @current_hitter.eye == "A" ? (([:n] * 7) + ([:y] * 3)).sample : see_pitch = (([:n] * 8) + ([:y] * 3)).sample
+    end
 
     def batters_eye_simulation(pitch_result)
         if @current_pitcher.grade == "A+"
@@ -428,7 +431,11 @@ class Game
         else 
             see_pitch = [:n, :n, :n, :n, :y, :y, :y, :y, :y, :y].sample
         end
-        
+
+        unless see_pitch == :y
+            batters_eye_second_chance if @current_hitter.eye == "A" || @current_hitter.eye == "B"
+        end
+
         if see_pitch == :y  
             if pitch_result == :S 
                 puts "Batter eyes strike!" 
@@ -757,27 +764,27 @@ end
 #In tendencies hash, 0 represents out, 1- singles, 2-doubles, 3-triples, 4-homers
 #for example, Aaron Judge is projected to hit 14 * 3 = 42 HRs in 600 ABs and batting (200 - 143 outs) 57/ 200 = .285
 mets_hitters = [
-    Hitter.new("S. Marte", "CF", {0 => 138, 1 => 44, 2 => 12, 3 => 1, 4 => 5}, "A"),
-    Hitter.new("B. Nimmo", "RF", {0 => 142, 1 => 42, 2 => 10, 3 => 1, 4 => 5}, "A"),
-    Hitter.new("F. Lindor", "SS", {0 => 143, 1 => 32, 2 => 13, 3 => 1, 4 => 11}, "B"),
-    Hitter.new("P. Alonso", "1B", {0 => 148, 1 => 24, 2 => 12, 3 => 1, 4 => 15}, "C"),
-    Hitter.new("E. Esobar", "3B", {0 => 149, 1 => 30, 2 => 9, 3 => 2, 4 => 10}, "C"),
-    Hitter.new("R. Cano", "DH", {0 => 149, 1 => 30, 2 => 14, 3 => 0, 4 => 7}, "D"),
-    Hitter.new("J. McNeil", "2B", {0 => 150, 1 => 36, 2 => 9, 3 => 1, 4 => 4}, "B"),
-    Hitter.new("J. McCann", "C", {0 => 158, 1 => 31, 2 => 6, 3 => 0, 4 => 5}, "C"),
-    Hitter.new("M. Canha", "LF", {0 => 154, 1 => 28, 2 => 9, 3 => 2, 4 => 7}, "B")
+    Hitter.new("S. Marte", "CF", {0 => 138, 1 => 44, 2 => 12, 3 => 1, 4 => 5}, "A", "C"),
+    Hitter.new("B. Nimmo", "RF", {0 => 142, 1 => 42, 2 => 10, 3 => 1, 4 => 5}, "A", "B"),
+    Hitter.new("F. Lindor", "SS", {0 => 143, 1 => 32, 2 => 13, 3 => 1, 4 => 11}, "B", "B"),
+    Hitter.new("P. Alonso", "1B", {0 => 148, 1 => 24, 2 => 12, 3 => 1, 4 => 15}, "C", "B"),
+    Hitter.new("E. Esobar", "3B", {0 => 149, 1 => 30, 2 => 9, 3 => 2, 4 => 10}, "C", "D"),
+    Hitter.new("R. Cano", "DH", {0 => 149, 1 => 30, 2 => 14, 3 => 0, 4 => 7}, "D", "C"),
+    Hitter.new("J. McNeil", "2B", {0 => 150, 1 => 36, 2 => 9, 3 => 1, 4 => 4}, "B", "D"),
+    Hitter.new("J. McCann", "C", {0 => 158, 1 => 31, 2 => 6, 3 => 0, 4 => 5}, "C", "D"),
+    Hitter.new("M. Canha", "LF", {0 => 154, 1 => 28, 2 => 9, 3 => 2, 4 => 7}, "B", "B")
 ]
 
 yankees_hitters = [
-    Hitter.new("D. LeMahieu", "2B", {0 => 135, 1 => 45, 2 => 11, 3 => 1, 4 => 8}, "B"),
-    Hitter.new("A. Rizzo", "1B", {0 => 150, 1 => 32, 2 => 8, 3 => 1, 4 => 9}, "C"),
-    Hitter.new("A. Judge", "RF", {0 => 143, 1 => 34, 2 => 9, 3 => 0, 4 => 14}, "B"),
-    Hitter.new("G. Stanton", "DH", {0 => 145, 1 => 33, 2 => 8, 3 => 0, 4 => 14}, "C"),
-    Hitter.new("G. Torres", "SS", {0 => 148, 1 => 38, 2 => 10, 3 => 0, 4 => 4}, "C"),
-    Hitter.new("J. Donaldson", "3B", {0 => 150, 1 => 27, 2 => 12, 3 => 0, 4 => 11}, "C"),
-    Hitter.new("J. Gallo", "LF", {0 => 162, 1 => 10, 2 => 14, 3 => 0, 4 => 14}, "C"),
-    Hitter.new("A. Hicks", "CF", {0 => 153, 1 => 27, 2 => 9, 3 => 0, 4 => 11}, "B"),
-    Hitter.new("K. Higashioka", "C", {0 => 164, 1 => 16, 2 => 10, 3 => 0, 4 => 10}, "C")
+    Hitter.new("D. LeMahieu", "2B", {0 => 135, 1 => 45, 2 => 11, 3 => 1, 4 => 8}, "B", "B"),
+    Hitter.new("A. Rizzo", "1B", {0 => 150, 1 => 32, 2 => 8, 3 => 1, 4 => 9}, "C", "B"),
+    Hitter.new("A. Judge", "RF", {0 => 143, 1 => 34, 2 => 9, 3 => 0, 4 => 14}, "B", "B"),
+    Hitter.new("G. Stanton", "DH", {0 => 145, 1 => 33, 2 => 8, 3 => 0, 4 => 14}, "C", "B"),
+    Hitter.new("G. Torres", "SS", {0 => 148, 1 => 38, 2 => 10, 3 => 0, 4 => 4}, "C", "C"),
+    Hitter.new("J. Donaldson", "3B", {0 => 150, 1 => 27, 2 => 12, 3 => 0, 4 => 11}, "C", "A"),
+    Hitter.new("J. Gallo", "LF", {0 => 162, 1 => 10, 2 => 14, 3 => 0, 4 => 14}, "C", "C"),
+    Hitter.new("A. Hicks", "CF", {0 => 153, 1 => 27, 2 => 9, 3 => 0, 4 => 11}, "B", "B"),
+    Hitter.new("K. Higashioka", "C", {0 => 164, 1 => 16, 2 => 10, 3 => 0, 4 => 10}, "C", "D")
 ]
 
 #Group of pitchers consist of 3 SP and 2 RP, stamina is based on projected IP and pitch tendencies is based on pitch control
