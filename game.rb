@@ -2,7 +2,6 @@ require_relative 'hitter'
 require_relative 'pitcher'
 require_relative 'team'
 require_relative 'display'
-# require 'byebug'
 
 class Game
     CORNERS = [[0,0], [0,2], [2,0] [2,2]]
@@ -145,7 +144,6 @@ class Game
     end
 
     def play
-        # debugger
         welcome_message
         enter_to_start
         until game_won? 
