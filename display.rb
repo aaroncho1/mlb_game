@@ -6,17 +6,33 @@ class Display
     PITCH_BOX_WIDTH = 11
     PLAYER_COL_WIDTH = 20
     STAT_COL_WIDTH = 4
-    attr_accessor :bases, :plays, :pitch_sequence, :inning_runs
+    attr_accessor :bases, :plays, :pitch_sequence, :inning_runs, :play_by_play
 
     def initialize
         @bases = ["empty", "empty", "empty"]
         @plays = []
         @pitch_sequence = []
         @inning_runs = []
+        @play_by_play = []
     end
 
     def add_runs_to_inning(runs)
         inning_runs << runs
+    end
+
+    def add_plays_to_play_by_play
+        plays.each do |play|
+            play_by_play << play
+        end
+    end
+
+    def display_play_by_play
+        system("clear")
+        puts "-" * 16 + "PLAY BY PLAY SUMMARY" + "-" * 16
+        play_by_play.each do |play|
+            color_options = colors_for(play)
+            puts play.to_s.colorize(color_options)
+        end
     end
 
     def display_runs_summary(innings_played, away_team, home_team)
@@ -29,8 +45,9 @@ class Display
         away_team_hits = away_team.hitters.map{|away_hitter| away_hitter.hits}.sum
         home_team_hits = home_team.hitters.map{|home_hitter| home_hitter.hits}.sum
         @inning_runs.each_with_index {|runs, i| i.even? ? away_team_runs << runs : home_team_runs << runs}
-        puts "#{away_team.name}   #{away_team_runs.join(" ")}    #{away_team_runs.sum} #{away_team_hits}"
-        puts "#{home_team.name}   #{home_team_runs.join(" ")}    #{home_team_runs.sum} #{home_team_hits}"
+        home_team_runs << " " if home_team_runs.length != innings_played - 1     
+        puts "#{away_team.name}   #{away_team_runs.join(" ")}    #{away_team_runs.select{|num| num.is_a?(Integer)}.sum} #{away_team_hits}"
+        puts "#{home_team.name}   #{home_team_runs.join(" ")}    #{away_team_runs.select{|num| num.is_a?(Integer)}.sum} #{home_team_hits}"
     end
 
     def display_box_score(away, home)

@@ -2,6 +2,7 @@ require_relative 'hitter'
 require_relative 'pitcher'
 require_relative 'team'
 require_relative 'display'
+# require 'byebug'
 
 class Game
     CORNERS = [[0,0], [0,2], [2,0] [2,2]]
@@ -32,16 +33,24 @@ class Game
     end
 
     def extra_innings?
-        @game_outs >= 54 && score_difference == 0
+        @game_outs >= 12 && score_difference == 0
+    end
+
+    def walk_off_or_home_win_in_ninth?
+        @game_outs.between?(9,11) && (home_team.runs > away_team.runs)
+    end
+
+    def game_over?
+        @game_outs >= 12 && score_difference != 0
     end
 
     def game_won?
         play_extra_innings if extra_innings?
-        @game_outs >= 54 && score_difference != 0
+        game_over? || walk_off_or_home_win_in_ninth?
     end
 
     def extra_innings_game_over?
-        ((away_team.runs > home_team.runs) && (@game_outs % 6 == 0)) || (home_team.runs > away_team.runs)
+        ((@game_outs >= 12) && (away_team.runs > home_team.runs) && (@game_outs % 6 == 0)) || ((@game_outs >= 12) && (home_team.runs > away_team.runs))
     end
 
     def half_inning_over?
@@ -49,7 +58,7 @@ class Game
     end
 
     def inning_over?
-        @game_outs % 6 == 0
+        @game_outs % 6 == 0 || (@game_outs >= 6 && extra_innings_game_over?)
     end
 
     def add_out
@@ -102,8 +111,8 @@ class Game
     def play_extra_innings
         until extra_innings_game_over?
             put_man_on_second
-            until half_inning_over?
-                play_half_inning
+            until half_inning_over? || extra_innings_game_over?
+                play_half_inning 
             end
             display.add_runs_to_inning(@inning_runs)
             switch_sides
@@ -112,7 +121,6 @@ class Game
     end
 
     def winner_message
-        refresh
         puts ""
         puts "GAME OVER"
         if home_team.runs > away_team.runs 
@@ -124,25 +132,37 @@ class Game
     end
 
     def any_key_to_continue
-        puts "Press 'enter' to continue to game summary:"
+        puts ""
+        puts "Press 'enter' to continue:"
         cmd = gets.chomp.downcase
     end
 
+    def any_key_to_quit
+        puts ""
+        puts "Press 'enter' to exit:"
+        cmd = gets.chomp.downcase
+        system("clear")
+    end
+
     def play
+        # debugger
         welcome_message
         enter_to_start
         until game_won? 
-            play_half_inning
-            if half_inning_over?
-                display.add_runs_to_inning(@inning_runs)
-                switch_sides
-                reset_inning
+            until half_inning_over? || walk_off_or_home_win_in_ninth?
+                play_half_inning
             end
+            display.add_runs_to_inning(@inning_runs)
+            switch_sides 
+            reset_inning 
         end
         winner_message
         any_key_to_continue
         display.display_runs_summary(@inning, away_team, home_team)
         display.display_box_score(away_team, home_team)
+        any_key_to_continue
+        display.display_play_by_play
+        any_key_to_quit
     end
 
     def in_play_simulation(hitter)
@@ -364,8 +384,10 @@ class Game
         refresh 
         base_to_steal_from = hitter.steal_base?(display) if display.runner_on_base?
         stolen_base_simulation(base_to_steal_from) if base_to_steal_from
-        go_for_hr = try_for_homerun?
-        unless go_for_hr
+        unless half_inning_over? || extra_innings_game_over? || walk_off_or_home_win_in_ninth?
+            go_for_hr = try_for_homerun?
+        end
+        unless go_for_hr || half_inning_over? || extra_innings_game_over? || walk_off_or_home_win_in_ninth?
             batters_eye_simulation(pitch_result)
             guessed_zone_num = hitter.guess_zone? 
             if guessed_zone_num
@@ -602,9 +624,9 @@ class Game
     def double_play_simulation
         if display.bases[0].speed == "A"
             add_out
-            display.bases << "empty"
-            puts "#{@current_hitter} grounded out"
-            display.plays << "#{@current_hitter} grounded out. #{@inning_outs} out"
+            display.bases.unshift("empty")
+            puts "#{@current_hitter.name} grounded out"
+            display.plays << "#{@current_hitter.name} grounded out. #{@inning_outs} out"
         else
             2.times {add_out}
             puts "Double play! #{@current_hitter.name} grounded out. #{display.bases[0].name} out at second"
@@ -745,13 +767,15 @@ class Game
 
     def reset_inning
         @inning_outs, @inning_runs, @balls, @strikes = 0, 0, 0, 0
+        display.plays << "END OF #{@inning_half.upcase} #{@inning}"
+        display.add_plays_to_play_by_play
         display.plays = []
         display.bases = ["empty", "empty", "empty"]
-        @inning += 1 if inning_over?
+        @inning += 1 if inning_over? || walk_off_or_home_win_in_ninth? 
+        @inning_half = @inning_half == "Top" ? "Bottom" : "Top"
     end
 
     def switch_sides
-        @inning_half = @inning_half == "Top" ? "Bottom" : "Top"
         @pitching_team = @pitching_team == home_team ? away_team : home_team
         @hitting_team = @hitting_team == home_team ? away_team : home_team
         @current_hitter, @current_pitcher = @hitting_team.hitters[0], @pitching_team.pitchers[0]
