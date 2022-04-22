@@ -769,7 +769,7 @@ class Game
     end
 
     def enter_to_start
-        puts "press 'enter' to start game:"
+        puts "Press 'enter' to start game:"
         selected_key = gets.chomp
         system("clear")
     end
