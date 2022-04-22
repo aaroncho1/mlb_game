@@ -18,7 +18,21 @@ class Game
         @display = Display.new
         @current_pitcher, @current_hitter, @current_pitch_zone, @current_pitch = pitching_team.pitchers[0] , hitting_team.hitters[0], nil, nil
         @strike_zone = Array.new(3){Array.new(3, "_")}
+        @regulation_outs = 54
         @half_inning_done = false
+    end
+
+    def choose_innings
+        puts "Choose the number of innings you want to play (2-9):"
+        begin
+            innings_chosen = gets.chomp.to_i
+            raise "Number chosen must be between 2-9" if !innings_chosen.between?(2,9)
+        rescue => e   
+            puts e.message
+            retry
+        end
+        @regulation_outs = innings_chosen * 6
+        system("clear")
     end
 
     def switch_batter
@@ -33,15 +47,15 @@ class Game
     end
 
     def extra_innings?
-        @game_outs >= 12 && score_difference == 0
+        @game_outs >= @regulation_outs && score_difference == 0
     end
 
     def home_win_in_ninth?
-        @game_outs.between?(9,11) && (home_team.runs > away_team.runs)
+        @game_outs.between?(@regulation_outs - 3, @regulation_outs - 1) && (home_team.runs > away_team.runs)
     end
 
     def game_over?
-        @game_outs >= 12 && score_difference != 0
+        @game_outs >= @regulation_outs && score_difference != 0
     end
 
     def game_won?
@@ -50,7 +64,7 @@ class Game
     end
 
     def extra_innings_game_over?
-        ((@game_outs >= 12) && (away_team.runs > home_team.runs) && (@game_outs % 6 == 0) && (@half_inning_done)) || ((@game_outs >= 12) && (home_team.runs > away_team.runs))
+        ((@game_outs >= @regulation_outs) && (away_team.runs > home_team.runs) && (@game_outs % 6 == 0) && (@half_inning_done)) || ((@game_outs >= @regulation_outs) && (home_team.runs > away_team.runs))
     end
 
     def half_inning_over?
@@ -58,7 +72,7 @@ class Game
     end
 
     def inning_over?
-        @game_outs % 6 == 0 || (@game_outs >= 6 && extra_innings_game_over?)
+        @game_outs % 6 == 0 || (@game_outs >= @regulation_outs && extra_innings_game_over?)
     end
 
     def add_out
@@ -147,6 +161,7 @@ class Game
     def play
         welcome_message
         enter_to_start
+        choose_innings
         until game_won? 
             until half_inning_over? || home_win_in_ninth?
                 play_half_inning
@@ -751,18 +766,12 @@ class Game
         puts "Welcome to MLB 2 Player Game! The selected teams and players have been added."
         puts "For the pitching player, use the number keys to select pitch zone (i.e, 0 2 for top right corner)"
         puts "For the hitting player, follow the options given on the screen"
-        puts "Type 's' and 'enter' to start game"
     end
 
     def enter_to_start
-        begin
-            selected_key = gets.chomp
-            system("clear") if selected_key == "s"
-            raise "press 's' to start game" if selected_key != "s"
-        rescue => e  
-            puts e.message
-            retry
-        end
+        puts "press 'enter' to start game:"
+        selected_key = gets.chomp
+        system("clear")
     end
 
     def reset_inning
