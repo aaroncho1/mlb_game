@@ -1,3 +1,5 @@
+require 'io/console'
+
 class Pitcher  
     attr_reader :name, :grade, :tendencies, :stamina_interval, :pitch_options
     attr_accessor :stamina, :earned_runs, :pitches, :strikes 
@@ -22,14 +24,14 @@ class Pitcher
     def intentional_walk?
         puts ""
         puts "Pitching player, walk batter? (y/n)"
-        choice = gets.chomp.downcase
+        choice = STDIN.noecho(&:gets).chomp.downcase
         choice == "y" ? true : false
     end
 
     def make_him_chase?
         puts ""
         puts "Pitching player, make him chase? (y/n)"
-        choice = gets.chomp.downcase
+        choice = STDIN.noecho(&:gets).chomp.downcase
         choice
     end
 
@@ -37,7 +39,9 @@ class Pitcher
         puts ""
         puts "Pitching player, select your pitch with the corresponding number:"
         begin
-            pitch = gets.chomp.to_i
+            selection = STDIN.noecho(&:gets).chomp
+            pitch = selection.to_i
+            raise "Must type one number. Try again:" if selection.length != 1
             raise "Invalid pitch number. Try again:" if !pitch_options.has_key?(pitch)
         rescue => e   
             puts e.message
@@ -55,7 +59,7 @@ class Pitcher
         puts "20 21 22"
         begin
             alphabet = ("a".."z").to_a
-            chosen_zone = gets.chomp
+            chosen_zone = STDIN.noecho(&:gets).chomp
             chosen_zone.each_char do |el|
                 raise "Please use only numbers. Try again:" if alphabet.include?(el.downcase)
             end
