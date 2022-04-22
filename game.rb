@@ -18,6 +18,7 @@ class Game
         @display = Display.new
         @current_pitcher, @current_hitter, @current_pitch_zone, @current_pitch = pitching_team.pitchers[0] , hitting_team.hitters[0], nil, nil
         @strike_zone = Array.new(3){Array.new(3, "_")}
+        @half_inning_done = false
     end
 
     def switch_batter
@@ -35,7 +36,7 @@ class Game
         @game_outs >= 12 && score_difference == 0
     end
 
-    def walk_off_or_home_win_in_ninth?
+    def home_win_in_ninth?
         @game_outs.between?(9,11) && (home_team.runs > away_team.runs)
     end
 
@@ -45,11 +46,11 @@ class Game
 
     def game_won?
         play_extra_innings if extra_innings?
-        game_over? || walk_off_or_home_win_in_ninth?
+        game_over? || home_win_in_ninth?
     end
 
     def extra_innings_game_over?
-        ((@game_outs >= 12) && (away_team.runs > home_team.runs) && (@game_outs % 6 == 0)) || ((@game_outs >= 12) && (home_team.runs > away_team.runs))
+        ((@game_outs >= 12) && (away_team.runs > home_team.runs) && (@game_outs % 6 == 0) && (@half_inning_done)) || ((@game_outs >= 12) && (home_team.runs > away_team.runs))
     end
 
     def half_inning_over?
@@ -147,7 +148,7 @@ class Game
         welcome_message
         enter_to_start
         until game_won? 
-            until half_inning_over? || walk_off_or_home_win_in_ninth?
+            until half_inning_over? || home_win_in_ninth?
                 play_half_inning
             end
             display.add_runs_to_inning(@inning_runs)
@@ -224,6 +225,7 @@ class Game
     end     
 
     def pitch(pitcher)
+        @half_inning_done = false
         intentional_walk = pitcher.intentional_walk?
         if intentional_walk
             intentional_walk_message
@@ -382,10 +384,10 @@ class Game
         refresh 
         base_to_steal_from = hitter.steal_base?(display) if display.runner_on_base?
         stolen_base_simulation(base_to_steal_from) if base_to_steal_from
-        unless half_inning_over? || extra_innings_game_over? || walk_off_or_home_win_in_ninth?
+        unless half_inning_over? || extra_innings_game_over? || home_win_in_ninth?
             go_for_hr = try_for_homerun?
         end
-        unless go_for_hr || half_inning_over? || extra_innings_game_over? || walk_off_or_home_win_in_ninth?
+        unless go_for_hr || half_inning_over? || extra_innings_game_over? || home_win_in_ninth?
             batters_eye_simulation(pitch_result)
             guessed_zone_num = hitter.guess_zone? 
             if guessed_zone_num
@@ -769,11 +771,12 @@ class Game
         display.add_plays_to_play_by_play
         display.plays = []
         display.bases = ["empty", "empty", "empty"]
-        @inning += 1 if inning_over? || walk_off_or_home_win_in_ninth? 
+        @inning += 1 if inning_over? || home_win_in_ninth? 
         @inning_half = @inning_half == "Top" ? "Bottom" : "Top"
     end
 
     def switch_sides
+        @half_inning_done = true
         @pitching_team = @pitching_team == home_team ? away_team : home_team
         @hitting_team = @hitting_team == home_team ? away_team : home_team
         @current_hitter, @current_pitcher = @hitting_team.hitters[0], @pitching_team.pitchers[0]
@@ -788,7 +791,7 @@ mets_hitters = [
     Hitter.new("B. Nimmo", "RF", {0 => 142, 1 => 42, 2 => 10, 3 => 1, 4 => 5}, "A", "B"),
     Hitter.new("F. Lindor", "SS", {0 => 143, 1 => 32, 2 => 13, 3 => 1, 4 => 11}, "B", "B"),
     Hitter.new("P. Alonso", "1B", {0 => 148, 1 => 24, 2 => 12, 3 => 1, 4 => 15}, "C", "B"),
-    Hitter.new("E. Esobar", "3B", {0 => 149, 1 => 30, 2 => 9, 3 => 2, 4 => 10}, "C", "D"),
+    Hitter.new("E. Esobar", "3B", {0 => 149, 1 => 30, 2 => 9, 3 => 2, 4 => 100}, "C", "D"),
     Hitter.new("R. Cano", "DH", {0 => 149, 1 => 30, 2 => 14, 3 => 0, 4 => 7}, "D", "C"),
     Hitter.new("J. McNeil", "2B", {0 => 150, 1 => 36, 2 => 9, 3 => 1, 4 => 4}, "B", "D"),
     Hitter.new("J. McCann", "C", {0 => 158, 1 => 31, 2 => 6, 3 => 0, 4 => 5}, "C", "D"),
